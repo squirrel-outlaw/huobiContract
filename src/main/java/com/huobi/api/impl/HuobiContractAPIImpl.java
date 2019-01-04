@@ -1,7 +1,6 @@
 package com.huobi.api.impl;
 
-import com.huobi.api.HuobiApiRestClient;
-import com.huobi.api.HuobiApiService;
+
 import com.huobi.api.HuobiContractAPI;
 import com.huobi.api.HuobiContractApiService;
 import com.huobi.domain.POJOs.*;
@@ -20,7 +19,6 @@ import java.util.StringJoiner;
 
 import static com.huobi.api.HuobiApiServiceGenerator.createService;
 import static com.huobi.api.HuobiApiServiceGenerator.executeSync;
-import static com.huobi.constant.HuobiConsts.SYMBOLS_KLINE_AMOUNT_LEFT_TWO_DECIMAL;
 
 /**
  * @Author: squirrel
@@ -53,20 +51,6 @@ public class HuobiContractAPIImpl implements HuobiContractAPI {
     public List<Kline> getKlines(String symbol, Resolution period, String size) {
         List<Kline> klineList = executeSync(serviceMarket.getKlines(symbol, period == null ? null : period.getCode(), size))
                 .getData();
-        //某些交易对的amount和vol只保留2位小数
-        if (SYMBOLS_KLINE_AMOUNT_LEFT_TWO_DECIMAL.contains(symbol)) {
-            if (klineList.size() != 0) {
-                List<Kline> klineList1 = new ArrayList<>();
-                for (Kline kline : klineList) {
-                    BigDecimal amount = kline.getAmount().setScale(2, RoundingMode.HALF_UP);
-                    kline.setAmount(amount);
-                    BigDecimal vol = kline.getAmount().setScale(2, RoundingMode.HALF_UP);
-                    kline.setVol(vol);
-                    klineList1.add(kline);
-                }
-                return klineList1;
-            }
-        }
         return klineList;
     }
 

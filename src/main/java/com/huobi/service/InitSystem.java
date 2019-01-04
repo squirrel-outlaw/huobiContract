@@ -31,8 +31,6 @@ import static com.huobi.utils.DateUtil.getHourPointTimestamp;
 public class InitSystem {
     public HuobiContractAPI huobiContractAPI;
     public long tomorrowZeroHourTimestamp; //第二天零点时候的时间戳
-    public final static List<String> allSymbolList = Arrays.asList("BTC_CW", "BTC_NW","BTC_CQ","ETH_CW", "BTC_NW",
-            "BTC_CQ");
 
     public InitSystem() {
         String[] APIKeysEncrypted = getAPIKeys();

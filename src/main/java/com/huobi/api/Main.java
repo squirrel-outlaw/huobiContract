@@ -14,29 +14,19 @@ import static com.huobi.utils.PrintUtil.print;
 
 public class Main {
     public static void main(String[] args) {
+
         InitSystem initSystem = new InitSystem();
-        List<Kline> test=initSystem.huobiApiRestClient.getKlines("BTC_CW",Resolution.M5,"100");
-        print(test);
-
-        /*InitSystem initSystem = new InitSystem();
-        DataManager dataManager = new DataManager(initSystem);
-
-        TradeSystem tradeSystem = new TradeSystem(initSystem);
-        Policy policy=new PolicyTwo(dataManager);
-        tradeSystem.autoTradeByPolicy(policy);
+        print(initSystem.huobiContractAPI.getContractAccountInfos("BTC"));
 
 
-
-       /*
+      /*
         while (true) {
             try {
-                Thread.sleep(3 * 1000);
+                Thread.sleep(1 * 1000);
             } catch (Exception e) {
             }
-            print(dataManager.realTimePriceMap);
-            print(dataManager.dataMaps5Seconds[0]);
-            print(dataManager.dataMaps5Seconds[1]);
-            print(dataManager.dataMaps5Seconds[2]);
+            print(dataManager.BTCPriceRateList);
+
         }
 
 

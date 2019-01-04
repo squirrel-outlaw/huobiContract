@@ -14,11 +14,10 @@ public class ListUtil {
      * @param:
      * @return:
      */
-    public static <T> List<T> fixListLength(List<T> list, int length) {
+    public static <T> void fixListLength(List<T> list, int length) {
         if (list.size() > length) {
-            list = list.subList(list.size() - length, list.size());
+            list.subList(list.size() - length, list.size());
         }
-        return list;
     }
 
     /**
@@ -33,7 +32,7 @@ public class ListUtil {
         if (list.size() >= samplingPeriod) {
             //当列表项除以取样周期的余数，小于取样精度-1（取样点也算上，所以减1），取样结果就减少一项
             int samplingCountAdjust = 0;
-            if (list.size() % samplingPeriod < averageCounts ) {
+            if (list.size() % samplingPeriod < averageCounts) {
                 samplingCountAdjust = 1;
             }
 

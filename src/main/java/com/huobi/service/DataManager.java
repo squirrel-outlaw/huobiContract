@@ -7,6 +7,7 @@ import com.huobi.domain.enums.Resolution;
 
 import java.util.*;
 
+import static com.huobi.constant.HuobiConsts.ALL_CONTRACT_SYMBOLS;
 import static com.huobi.constant.TradeConditionConsts.*;
 import static com.huobi.utils.DateUtil.getHourPointTimestamp;
 import static com.huobi.utils.ListUtil.fixListLength;
@@ -21,15 +22,15 @@ import static com.huobi.utils.PrintUtil.print;
 public class DataManager {
     public InitSystem initSystem;
 
-    public List<Double> BTCPriceRateList = new ArrayList<>();  //BTC实时价格涨跌幅列表，结果为涨跌幅*100
-    public double BTCTodayOpenPrice;  //BTC当天的开盘价格
-    public List<Double> ETHPriceRateList = new ArrayList<>();  //ETH实时价格涨跌幅列表，结果为涨跌幅*100
-    public double ETHTodayOpenPrice;  //ETH当天的开盘价格
+    public Map<String, Double> allSymbolsTodayOpenPriceMap = new HashMap<>();  //所有合约交易对当天的开盘价
+    public List<Double> BTCPriceRateList = new ArrayList<>();  //ETH实时价格涨跌幅列表，结果为涨跌幅*100
 
 
     public DataManager(InitSystem initSystem) {
         this.initSystem = initSystem;
-
+        //初始化所有交易对当天开盘价格
+        updateAllSymbolsTodayOpenPrice();
+        BTCPriceRateList=timingUpdateRealTimePriceRate(1,3,"BTC_CW");
     }
 
 
@@ -38,7 +39,8 @@ public class DataManager {
      * @param: interval：更新的间隔（单位为秒; samplingCounts：采样的个数; symbol：合约名称
      * @return:
      */
-    public void timingUpdateRealTimePriceRate(double interval, int samplingCounts, String symbol) {
+    public List<Double> timingUpdateRealTimePriceRate(double interval, int samplingCounts, String symbol) {
+        final List<Double> priceRateList = new ArrayList();
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -50,20 +52,35 @@ public class DataManager {
                     // 则更新initSystem对象里存储的明天0点的时间戳,并更新所有交易对当天的开盘价格
                     if (newestTrade.getTs() > initSystem.tomorrowZeroHourTimestamp + 10 * 1000) {
                         initSystem.tomorrowZeroHourTimestamp = getHourPointTimestamp(24);
-                        updateAllSymbolsTodayOpenPrice();
+                        //updateAllSymbolsTodayOpenPrice();
                         return;
                     }
-                    priceTotal = priceTotal + btcusdtNewestTrade.getPrice();
+                    priceTotal = priceTotal + newestTrade.getPrice();
                 }
                 double priceAverage = priceTotal / samplingCounts;
-                BTCPriceRateList.add((priceAverage - BTCTodayOpenPrice) * 100
-                        / BTCTodayOpenPrice);
-                BTCPriceRateList = fixListLength(BTCPriceRateList, REALTIME_PRICE_LIST_FIXED_LENGTH);
+                priceRateList.add((priceAverage - allSymbolsTodayOpenPriceMap.get(symbol)) * 100
+                        / allSymbolsTodayOpenPriceMap.get(symbol));
+                fixListLength(priceRateList, REALTIME_PRICE_LIST_FIXED_LENGTH);
             }
         }, 0, (int) (interval * 1000));
+        return priceRateList;
     }
 
+    //更新所有合约交易对当天的开盘价格
+    private void updateAllSymbolsTodayOpenPrice() {
+        for (String symbol : ALL_CONTRACT_SYMBOLS) {
+            try {
+                Thread.sleep(REQUEST_INTERVAL_LONG);
+            } catch (Exception e) {
+            }
+            try {
+                Kline oneDayKline = initSystem.huobiContractAPI.getKlines(symbol, Resolution.D1, "1").get(0);
+                allSymbolsTodayOpenPriceMap.put(symbol, oneDayKline.getOpen());
+            } catch (IllegalStateException e) {
+            }
+        }
 
+    }
 }
 
 

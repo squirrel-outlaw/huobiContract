@@ -27,10 +27,8 @@ public interface HuobiConsts {
     DateTimeFormatter DT_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
     ZoneId ZONE_GMT = ZoneId.of("Z");
 
-    List<String> allS
-    //以下交易对取k线图时，amount和vol保留2位小数
-    List<String> SYMBOLS_KLINE_AMOUNT_LEFT_TWO_DECIMAL = Arrays.asList("btcusdt", "bchusdt", "ethusdt", "ltcusdt",
-            "eosusdt", "dashusdt", "omgusdt");
-
+    //所有合约交易对
+    List<String> ALL_CONTRACT_SYMBOLS = Arrays.asList("BTC_CW", "BTC_NW","BTC_CQ","ETH_CW", "ETH_NW",
+            "ETH_CQ","EOS_CW", "EOS_NW","EOS_CQ");
 
 }
