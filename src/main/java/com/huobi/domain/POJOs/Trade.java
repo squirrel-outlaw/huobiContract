@@ -1,6 +1,5 @@
 package com.huobi.domain.POJOs;
 
-import com.huobi.domain.enums.OrderSide;
 import lombok.Data;
 
 /**
@@ -11,6 +10,6 @@ public class Trade {
     private String id;
     private double price;
     private double amount;
-    private OrderSide direction;
+    private String direction;
     private long ts;
 }

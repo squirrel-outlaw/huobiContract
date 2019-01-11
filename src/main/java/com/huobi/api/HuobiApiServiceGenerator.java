@@ -31,6 +31,7 @@ public class HuobiApiServiceGenerator {
 
 
     private static Retrofit retrofit = builder.build();
+    private static Retrofit retrofitMarket = builder.build();
 
     public static <S> S createService(Class<S> serviceClass) {
         return createService(serviceClass, null, null);
@@ -44,8 +45,9 @@ public class HuobiApiServiceGenerator {
                 builder.client(httpClient.build());
                 retrofit = builder.build();
             }
+            return retrofit.create(serviceClass);
         }
-        return retrofit.create(serviceClass);
+        return retrofitMarket.create(serviceClass);
     }
 
     /**
@@ -63,7 +65,7 @@ public class HuobiApiServiceGenerator {
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         } catch (HuobiApiException e) {
-            log.error("errMsg:"+e.getMessage()+",errCode:"+e.getErrCode());
+            log.error("errMsg:" + e.getMessage() + ",errCode:" + e.getErrCode());
         }
         //此异常必须被捕获，否则程序终止运行
         throw new IllegalStateException("invalid response from server.");

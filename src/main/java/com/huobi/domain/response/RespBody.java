@@ -16,9 +16,9 @@ public class RespBody<T> {
     private String ch;
     private T data;
     private T tick;
-    @JsonProperty("err-code")
+    @JsonProperty("err_code")
     private String errCode;
-    @JsonProperty("err-msg")
+    @JsonProperty("err_msg")
     private String errMsg;
 
     public String toErrorString() {

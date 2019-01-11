@@ -2,7 +2,8 @@ package com.huobi.api;
 
 import com.huobi.constant.HuobiConsts;
 import com.huobi.domain.POJOs.*;
-import com.huobi.domain.response.BatchCancelResp;
+import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.domain.response.OrderResp;
 import com.huobi.domain.response.RespBody;
 import com.huobi.domain.response.RespTick;
 import retrofit2.Call;
@@ -16,8 +17,7 @@ import java.util.Set;
  */
 public interface HuobiContractApiService {
 
-// 行情接口---------------------------------------------------------------------------------
-
+    // 行情接口---------------------------------------------------------------------------------
     //获取 Market Depth 数据
     @GET("/market/depth")
     Call<RespBody<Depth>> getDepth(@Query("symbol") String symbol, @Query("type") String type);
@@ -38,19 +38,32 @@ public interface HuobiContractApiService {
     @GET("/market/history/trade")
     Call<RespBody<List<RespTick<Trade>>>> getHistoryTrades(@Query("symbol") String symbol, @Query("size") String size);
 
-// 资产接口---------------------------------------------------------------------------------
-
+    // 资产接口---------------------------------------------------------------------------------
     //获取用户账户信息
     @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
     @POST("/api/v1/contract_account_info")
-    Call<RespBody<List<ContractAccountInfo>>> getContractAccountInfos(@Query("symbol") String symbol);
+    Call<RespBody<List<ContractAccountInfo>>> getContractAccountInfos();
 
     //获取用户持仓信息
     @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("api/v1/contract_position_info")
+    @POST("/api/v1/contract_position_info")
     Call<RespBody<List<ContractPositionInfo>>> getContractPositionInfos(@Query("symbol") String symbol);
 
+    //获取用户持仓信息(缺省参数，默认返回所有品种）
+    @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
+    @POST("/api/v1/contract_position_info")
+    Call<RespBody<List<ContractPositionInfo>>> getContractPositionInfos();
+
+    // 交易接口---------------------------------------------------------------------------------
+    //合约下单
+    @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
+    @POST("/api/v1/contract_order")
+    Call<RespBody<OrderResp>> placeOrder(@Body ContractOrderRequest contractOrderRequest);
+
+    //获取合约订单信息
+    @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
+    @POST("/api/v1/contract_order_info")
+    Call<RespBody<ContractOrderInfo>> getContractOrderInfo(@Query("order_id") String contractOrderID);
 
 
-
-   }
+}

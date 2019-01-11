@@ -1,7 +1,6 @@
 package com.huobi.service;
 
 import com.huobi.domain.POJOs.Kline;
-import com.huobi.domain.POJOs.Symbol;
 import com.huobi.domain.POJOs.Trade;
 import com.huobi.domain.enums.Resolution;
 
@@ -11,8 +10,6 @@ import static com.huobi.constant.HuobiConsts.ALL_CONTRACT_SYMBOLS;
 import static com.huobi.constant.TradeConditionConsts.*;
 import static com.huobi.utils.DateUtil.getHourPointTimestamp;
 import static com.huobi.utils.ListUtil.fixListLength;
-import static com.huobi.utils.ListUtil.listSampleHandle;
-import static com.huobi.utils.PrintUtil.print;
 
 /**
  * @Description 用于从官方获取各种数据，并进行数据的规整

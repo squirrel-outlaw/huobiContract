@@ -1,36 +1,42 @@
 package com.huobi.service;
 
-
-import com.huobi.domain.POJOs.Account;
-import com.huobi.domain.POJOs.Asset;
-import com.huobi.domain.POJOs.Depth;
-import com.huobi.domain.POJOs.Order;
-import com.huobi.domain.POJOs.customerPOJOs.TradeResult;
-import com.huobi.domain.POJOs.customerPOJOs.TradeSignal;
-import com.huobi.domain.enums.*;
-import com.huobi.utils.jsonSerilizableUtils.JsonSerializable;
-import com.huobi.utils.jsonSerilizableUtils.ReadAndWriteJson;
-
-import java.io.IOException;
-import java.math.BigDecimal;
+import com.huobi.api.HuobiContractAPI;
+import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.service.policyImpl.PolicyClosePosition;
+import com.huobi.service.policyImpl.PolicyOpenByPriceRate;
 import java.util.*;
 
 import static com.huobi.constant.TradeConditionConsts.*;
-
-import static com.huobi.utils.PrintUtil.print;
 
 /**
  * @Author: squirrel
  * @Date: 18-9-19 上午9:11
  */
 public class TradeSystem {
-    public void autoTrade(){
+    private DataManager dataManager;
+    private HuobiContractAPI huobiContractAPI;
+
+    public TradeSystem(DataManager dataManager) {
+        this.dataManager = dataManager;
+        this.huobiContractAPI = dataManager.initSystem.huobiContractAPI;
+    }
+
+    public void autoTrade() {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
-
+                //根据开仓策略下订单
+                Policy policyOpenByPriceRate = new PolicyOpenByPriceRate(dataManager);
+                List<ContractOrderRequest> openRequestlist = policyOpenByPriceRate.generateContractOrderRequest();
+                long orderID = huobiContractAPI.placeOrder(openRequestlist.get(0));
+                //根据平仓策略下订单
+                Policy policyClosePosition=new PolicyClosePosition(dataManager);
+                List<ContractOrderRequest> closeRequestList = policyClosePosition.generateContractOrderRequest();
+                for (ContractOrderRequest closeContractOrderRequest:closeRequestList){
+                    huobiContractAPI.placeOrder(closeContractOrderRequest);
+                }
             }
-        }, HANG_ORDER_INTERVAL, HANG_ORDER_INTERVAL);// 取消订单，重新挂单的间隔为2s
+        }, 0, AUTO_TRADE_INTERVAL);// 自动交易间隔为1s
     }
 
 }

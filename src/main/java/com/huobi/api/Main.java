@@ -1,11 +1,9 @@
 package com.huobi.api;
 
-import com.huobi.domain.POJOs.Kline;
-import com.huobi.domain.enums.Resolution;
+import com.huobi.domain.POJOs.ContractAccountInfo;
+import com.huobi.domain.request.ContractOrderRequest;
 import com.huobi.service.*;
-import com.huobi.service.policyImpl.PolicyOne;
-import com.huobi.service.policyImpl.PolicyTwo;
-import com.huobi.utils.security.AESEncryption;
+
 
 import java.util.List;
 
@@ -16,8 +14,19 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
-        print(initSystem.huobiContractAPI.getContractAccountInfos("BTC"));
 
+
+double newestPrice = initSystem.huobiContractAPI.getTrade("BTC_CW").getPrice();
+
+        try {
+            Thread.sleep(1 * 1000);
+        } catch (Exception e) {
+        }
+        ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "this_week", "", "",
+                String.valueOf(newestPrice), "1", "buy", "open", "20", "limit");
+       print(contractOrderRequest);
+        long orderID = initSystem.huobiContractAPI.placeOrder(contractOrderRequest);
+        print(orderID);
 
       /*
         while (true) {
