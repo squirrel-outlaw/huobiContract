@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.huobi.constant.TradeConditionConsts.*;
+import static com.huobi.utils.PrintUtil.print;
 
 /**
  * @Description
@@ -27,6 +28,10 @@ public class PolicyClosePosition extends Policy {
         List<ContractOrderRequest> contractOrderRequestList = new ArrayList<>();
         List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
         for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
+           //
+
+
+
             //创建contractType枚举把"this_week"转化为"CW"
             ContractType contractType = ContractType.valueOf(contractPositionInfo.getContract_type());
             String symbol = contractPositionInfo.getSymbol() + "_" + contractType.getType();
@@ -35,24 +40,25 @@ public class PolicyClosePosition extends Policy {
             //获取持仓成本价
             double costPrice = contractPositionInfo.getCost_hold();
             //盈亏比例
-            double profitLossRate = (newestPrice - costPrice) / costPrice;
+            double profitLossRate = (newestPrice - costPrice) * 100 / costPrice;
+            print(profitLossRate);
             if (contractPositionInfo.getDirection().equals("buy")) {
                 if (profitLossRate > TAKE_PROFIT_RATE || profitLossRate < STOP_LOSS_RATE) {
                     //做多时的平仓策略
-                  //  ContractOrderRequest contractOrderRequest = new ContractOrderRequest(contractPositionInfo
-                   //         .getSymbol(), contractPositionInfo.getContract_type(), null, 0, newestPrice,
-                    //        contractPositionInfo.getVolume(), "sell", "close", contractPositionInfo.getLever_rate(),
-                     //       "limit");
-                  //  contractOrderRequestList.add(contractOrderRequest);
+                    ContractOrderRequest contractOrderRequest = new ContractOrderRequest(contractPositionInfo
+                            .getSymbol(), contractPositionInfo.getContract_type(), null, "", newestPrice,
+                            contractPositionInfo.getAvailable(), "sell", "close", contractPositionInfo.getLever_rate(),
+                            "limit");
+                    contractOrderRequestList.add(contractOrderRequest);
                 }
             } else {
                 if (profitLossRate < TAKE_PROFIT_RATE || profitLossRate > STOP_LOSS_RATE) {
                     //做空时的平仓策略
-                 //   ContractOrderRequest contractOrderRequest = new ContractOrderRequest(contractPositionInfo
-                         //   .getSymbol(), contractPositionInfo.getContract_type(), null, 0, newestPrice,
-                       //     contractPositionInfo.getVolume(), "buy", "close", contractPositionInfo.getLever_rate(),
-                   //         "limit");
-                  //  contractOrderRequestList.add(contractOrderRequest);
+                    ContractOrderRequest contractOrderRequest = new ContractOrderRequest(contractPositionInfo
+                            .getSymbol(), contractPositionInfo.getContract_type(), null, "", newestPrice,
+                            contractPositionInfo.getAvailable(), "buy", "close", contractPositionInfo.getLever_rate(),
+                            "limit");
+                    contractOrderRequestList.add(contractOrderRequest);
                 }
             }
         }

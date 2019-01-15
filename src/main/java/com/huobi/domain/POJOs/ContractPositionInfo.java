@@ -18,8 +18,8 @@ public class ContractPositionInfo {
     private String contract_code;         //合约代码
     private String contract_type;   //合约类型
     private long volume;             //持仓量
-    private double available;         //可平仓数量
-    private double frozen;             //冻结数量
+    private long available;         //可平仓数量
+    private long frozen;             //冻结数量
     private double cost_open;          //开仓均价
     private double cost_hold;          //持仓均价
     private double profit_unreal;      //未实现盈亏

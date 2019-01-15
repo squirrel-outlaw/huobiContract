@@ -20,14 +20,14 @@ public class DataManager {
     public InitSystem initSystem;
 
     public Map<String, Double> allSymbolsTodayOpenPriceMap = new HashMap<>();  //所有合约交易对当天的开盘价
-    public List<Double> BTCPriceRateList = new ArrayList<>();  //ETH实时价格涨跌幅列表，结果为涨跌幅*100
+    public List<Double> BTCPriceRateList;  //ETH实时价格涨跌幅列表，结果为涨跌幅*100
 
 
     public DataManager(InitSystem initSystem) {
         this.initSystem = initSystem;
         //初始化所有交易对当天开盘价格
         updateAllSymbolsTodayOpenPrice();
-        BTCPriceRateList=timingUpdateRealTimePriceRate(1,3,"BTC_CW");
+        BTCPriceRateList = timingUpdateRealTimePriceRate(1, 3, "BTC_CQ");
     }
 
 
@@ -37,7 +37,7 @@ public class DataManager {
      * @return:
      */
     public List<Double> timingUpdateRealTimePriceRate(double interval, int samplingCounts, String symbol) {
-        final List<Double> priceRateList = new ArrayList();
+        List<Double> priceRateList = new ArrayList<>();
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override

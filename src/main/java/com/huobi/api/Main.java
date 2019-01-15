@@ -1,6 +1,7 @@
 package com.huobi.api;
 
 import com.huobi.domain.POJOs.ContractAccountInfo;
+import com.huobi.domain.POJOs.ContractPositionInfo;
 import com.huobi.domain.request.ContractOrderRequest;
 import com.huobi.service.*;
 
@@ -14,19 +15,12 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
+        DataManager dataManager = new DataManager(initSystem);
+
+        TradeSystem tradeSystem = new TradeSystem(dataManager);
+        tradeSystem.autoTrade();
 
 
-double newestPrice = initSystem.huobiContractAPI.getTrade("BTC_CW").getPrice();
-
-        try {
-            Thread.sleep(1 * 1000);
-        } catch (Exception e) {
-        }
-        ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "this_week", "", "",
-                String.valueOf(newestPrice), "1", "buy", "open", "20", "limit");
-       print(contractOrderRequest);
-        long orderID = initSystem.huobiContractAPI.placeOrder(contractOrderRequest);
-        print(orderID);
 
       /*
         while (true) {
