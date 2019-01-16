@@ -30,25 +30,23 @@ public class TradeSystem {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
-                //根据平仓策略下订单
-                List<ContractOrderRequest> closeRequestList = policyClosePosition.generateContractOrderRequest();
-                for (ContractOrderRequest closeContractOrderRequest : closeRequestList) {
-                    huobiContractAPI.placeOrder(closeContractOrderRequest);
-                }
+                try {
+                    //根据平仓策略下订单
+                    List<ContractOrderRequest> closeRequestList = policyClosePosition.generateContractOrderRequest();
+                    for (ContractOrderRequest closeContractOrderRequest : closeRequestList) {
+                        huobiContractAPI.placeOrder(closeContractOrderRequest);
+                    }
 
-                //根据开仓策略下订单
-                List<ContractOrderRequest> openRequestlist = policyOpenByPriceRate.generateContractOrderRequest();
-                if (openRequestlist.size() > 0) {
-                    long orderID = huobiContractAPI.placeOrder(openRequestlist.get(0));
+                    //根据开仓策略下订单
+                    List<ContractOrderRequest> openRequestlist = policyOpenByPriceRate.generateContractOrderRequest();
+                    if (openRequestlist.size() > 0) {
+                        long orderID = huobiContractAPI.placeOrder(openRequestlist.get(0));
+                    }
+                } catch (IllegalStateException e) {
                 }
             }
         }, 0, AUTO_TRADE_INTERVAL);// 自动交易间隔为1s
     }
-
-
-
-
-
 
 
 }

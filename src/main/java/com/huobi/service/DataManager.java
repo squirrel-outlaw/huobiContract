@@ -10,6 +10,7 @@ import static com.huobi.constant.HuobiConsts.ALL_CONTRACT_SYMBOLS;
 import static com.huobi.constant.TradeConditionConsts.*;
 import static com.huobi.utils.DateUtil.getHourPointTimestamp;
 import static com.huobi.utils.ListUtil.fixListLength;
+import static com.huobi.utils.PrintUtil.print;
 
 /**
  * @Description 用于从官方获取各种数据，并进行数据的规整
@@ -42,22 +43,27 @@ public class DataManager {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                double priceTotal = 0d;
-                for (int i = 0; i < samplingCounts; i++) {
-                    Trade newestTrade = initSystem.huobiContractAPI.getTrade(symbol);
-                    // 如果获得的最近交易记录的时间戳，大于系统当前存储的明天0点的时间戳10秒，
-                    // 则更新initSystem对象里存储的明天0点的时间戳,并更新所有交易对当天的开盘价格
-                    if (newestTrade.getTs() > initSystem.tomorrowZeroHourTimestamp + 10 * 1000) {
-                        initSystem.tomorrowZeroHourTimestamp = getHourPointTimestamp(24);
-                        //updateAllSymbolsTodayOpenPrice();
-                        return;
+                try {
+                    double priceTotal = 0d;
+                    for (int i = 0; i < samplingCounts; i++) {
+                        Trade newestTrade = initSystem.huobiContractAPI.getTrade(symbol);
+                        // 如果获得的最近交易记录的时间戳，大于系统当前存储的明天0点的时间戳10秒，
+                        // 则更新initSystem对象里存储的明天0点的时间戳,并更新所有交易对当天的开盘价格
+                        if (newestTrade.getTs() > initSystem.tomorrowZeroHourTimestamp + 10 * 1000) {
+                            initSystem.tomorrowZeroHourTimestamp = getHourPointTimestamp(24);
+                            //updateAllSymbolsTodayOpenPrice();
+                            return;
+                        }
+                        priceTotal = priceTotal + newestTrade.getPrice();
                     }
-                    priceTotal = priceTotal + newestTrade.getPrice();
+                    double priceAverage = priceTotal / samplingCounts;
+                    priceRateList.add((priceAverage - allSymbolsTodayOpenPriceMap.get(symbol)) * 100
+                            / allSymbolsTodayOpenPriceMap.get(symbol));
+                    fixListLength(priceRateList, REALTIME_PRICE_LIST_FIXED_LENGTH);
+                } catch (IllegalStateException e) {
+                    //如果出现服务器连接故障，清空priceRateList
+                    priceRateList.clear();
                 }
-                double priceAverage = priceTotal / samplingCounts;
-                priceRateList.add((priceAverage - allSymbolsTodayOpenPriceMap.get(symbol)) * 100
-                        / allSymbolsTodayOpenPriceMap.get(symbol));
-                fixListLength(priceRateList, REALTIME_PRICE_LIST_FIXED_LENGTH);
             }
         }, 0, (int) (interval * 1000));
         return priceRateList;

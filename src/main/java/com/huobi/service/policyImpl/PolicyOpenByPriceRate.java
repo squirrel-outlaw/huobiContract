@@ -46,7 +46,7 @@ public class PolicyOpenByPriceRate extends Policy {
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
                     newestPrice, 1, "buy", "open", 20, "limit");
             contractOrderRequestList.add(contractOrderRequest);
-        }else if(BTCPriceRateLast - BTCPriceRate2rdLast < OPEN_SHORT_POSITION_RATE_DERIVATIVE){
+        } else if (BTCPriceRateLast - BTCPriceRate2rdLast < OPEN_SHORT_POSITION_RATE_DERIVATIVE) {
             double newestPrice = huobiContractAPI.getTrade("BTC_CQ").getPrice();
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
                     newestPrice, 1, "sell", "open", 20, "limit");
@@ -60,7 +60,7 @@ public class PolicyOpenByPriceRate extends Policy {
         List<ContractAccountInfo> contractAccountInfoList = huobiContractAPI.getContractAccountInfos();
         for (ContractAccountInfo contractAccountInfo : contractAccountInfoList) {
             if (contractAccountInfo.getSymbol().equals(symbol)) {
-                return contractAccountInfo.getMargin_available() / contractAccountInfo.getMargin_balance();
+                return contractAccountInfo.getMargin_available() * 100 / contractAccountInfo.getMargin_balance();
             }
         }
         return 0;

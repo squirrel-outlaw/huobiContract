@@ -63,7 +63,7 @@ public class HuobiApiServiceGenerator {
                 parseError(response);
             }
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
+          //  log.error(e.getMessage(), e);
         } catch (HuobiApiException e) {
             log.error("errMsg:" + e.getMessage() + ",errCode:" + e.getErrCode());
         }

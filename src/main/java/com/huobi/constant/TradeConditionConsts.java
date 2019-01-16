@@ -20,7 +20,7 @@ public interface TradeConditionConsts {
 
     double OPEN_LONG_POSITION_RATE_DERIVATIVE = 0.1;  //此阈值为交易对涨跌幅波动的导数，当超过此阈值时，开多
     double OPEN_SHORT_POSITION_RATE_DERIVATIVE = -0.1;  //开空
-    double OPEN_POSITION_AVAILABLE_MARGIN_PERCENT = 0.95; //此阈值为开仓时可用保证金占总权益的百分比，当大于此阈值时才可开仓
+    double OPEN_POSITION_AVAILABLE_MARGIN_PERCENT = 95; //此阈值为开仓时可用保证金占总权益的百分比，当大于此阈值时才可开仓
 
 
     double TAKE_PROFIT_RATE = 1;  //止盈比例,1代表百分之1

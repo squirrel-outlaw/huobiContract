@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.huobi.constant.TradeConditionConsts.HANG_ORDER_ADJUST_RATE;
+
 import static com.huobi.constant.TradeConditionConsts.HANG_ORDER_INTERVAL;
 import static com.huobi.utils.PrintUtil.print;
 
@@ -27,7 +27,7 @@ public class ActualOrderHandler {
 
     //借用Order对象的属性，虚拟的完成订单对象，用来保存最终完成交易的详情
     //借用amount，price，filledCashAmount这三个属性值，其中filledCashAmount是成交计价货币使用量，包含手续费
-    private Order virtualFilledOrder;
+    /*private Order virtualFilledOrder;
     private List<Order> virtualFilledOrderList;
 
     private HuobiContractAPI huobiContractAPI;
@@ -110,7 +110,7 @@ public class ActualOrderHandler {
     /**
      * @Description: 根据买卖不同，分别确定买单或卖单的挂单价
      */
-    private void buySellRequestOrderHandle() {
+   /* private void buySellRequestOrderHandle() {
         double hangPrice;
         if (virtualRequestOrder.getDirection().equals("buy")) {
             double highestBuyPrice = huobiContractAPI.getDepth(virtualRequestOrder.getSymbol(), MergeLevel.STEP0).getBids().get(0).get
@@ -132,7 +132,7 @@ public class ActualOrderHandler {
      * @Description: 根据订单实际成交的情况，更新virtualFilledOrder对象
      * @param: orderDetail：订单实际成交的情况
      */
-    private void updateFilledOrder(Order orderDetail) {
+   /* private void updateFilledOrder(Order orderDetail) {
         //如果是买单，手续费在基础货币中扣除
         if (virtualRequestOrder.getType().getCode().startsWith("buy")) {
             //买单的手续费为基础币，更新virtualFilledOrder的amount为之前保存的和这一次成交之和 ，再减去手续费
@@ -153,6 +153,6 @@ public class ActualOrderHandler {
             virtualFilledOrder.setFilledCashAmount(BigDecimal.valueOf(filledCashAmount));
         }
     }
-
+*/
 
 }

@@ -16,21 +16,12 @@ public class Main {
 
         InitSystem initSystem = new InitSystem();
         DataManager dataManager = new DataManager(initSystem);
-
         TradeSystem tradeSystem = new TradeSystem(dataManager);
         tradeSystem.autoTrade();
 
 
 
-      /*
-        while (true) {
-            try {
-                Thread.sleep(1 * 1000);
-            } catch (Exception e) {
-            }
-            print(dataManager.BTCPriceRateList);
 
-        }
 
 
 
