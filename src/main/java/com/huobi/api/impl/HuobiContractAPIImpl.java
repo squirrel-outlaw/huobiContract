@@ -5,6 +5,7 @@ import com.huobi.api.HuobiContractAPI;
 import com.huobi.api.HuobiContractApiService;
 import com.huobi.domain.POJOs.*;
 import com.huobi.domain.enums.*;
+import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
 import com.huobi.domain.response.RespBody;
 import com.huobi.domain.response.RespTick;
@@ -97,8 +98,8 @@ public class HuobiContractAPIImpl implements HuobiContractAPI {
 
     //获取合约订单信息
     @Override
-    public ContractOrderInfo getContractOrderInfo(String contractOrderID) {
-        return executeSync(service.getContractOrderInfo(contractOrderID)).getData();
+    public ContractOrderInfo getContractOrderInfo(ContractOrderInfoRequest orderInfoRequest) {
+        return executeSync(service.getContractOrderInfo(orderInfoRequest)).getData();
     }
 
 

@@ -2,6 +2,7 @@ package com.huobi.api;
 
 import com.huobi.domain.POJOs.*;
 import com.huobi.domain.enums.*;
+import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
 
 
@@ -37,7 +38,7 @@ public interface HuobiContractAPI {
     long placeOrder(ContractOrderRequest orderRequest);
 
     //获取合约订单信息
-    ContractOrderInfo getContractOrderInfo(String contractOrderID);
+    ContractOrderInfo getContractOrderInfo(ContractOrderInfoRequest orderInfoRequest);
 
 
 

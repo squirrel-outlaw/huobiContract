@@ -115,7 +115,7 @@ task copyFileFromAliyun() {
         ssh.run {
             session(remotes.deployServer) {
                 println 'start copying file...'
-                get from: '/usr/local/huobi/AliyunData', into: buildDir
+                get from: '/usr/local/huobi/logs', into: buildDir
             }
         }
     }

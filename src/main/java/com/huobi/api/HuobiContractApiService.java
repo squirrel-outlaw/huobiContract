@@ -2,6 +2,7 @@ package com.huobi.api;
 
 import com.huobi.constant.HuobiConsts;
 import com.huobi.domain.POJOs.*;
+import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
 import com.huobi.domain.response.OrderResp;
 import com.huobi.domain.response.RespBody;
@@ -63,7 +64,7 @@ public interface HuobiContractApiService {
     //获取合约订单信息
     @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
     @POST("/api/v1/contract_order_info")
-    Call<RespBody<ContractOrderInfo>> getContractOrderInfo(@Query("order_id") String contractOrderID);
+    Call<RespBody<ContractOrderInfo>> getContractOrderInfo(@Body ContractOrderInfoRequest orderInfoRequest);
 
 
 }

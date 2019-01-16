@@ -27,7 +27,7 @@ public class DataManager {
         this.initSystem = initSystem;
         //初始化所有交易对当天开盘价格
         updateAllSymbolsTodayOpenPrice();
-        BTCPriceRateList = timingUpdateRealTimePriceRate(1, 3, "BTC_CQ");
+        BTCPriceRateList = timingUpdateRealTimePriceRate(2, 3, "BTC_CQ");
     }
 
 

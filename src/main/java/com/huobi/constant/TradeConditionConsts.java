@@ -18,8 +18,8 @@ public interface TradeConditionConsts {
 
     int AUTO_TRADE_INTERVAL = 1 * 1000;   //自动交易的间隔时间，单位ms
 
-    double OPEN_LONG_POSITION_RATE_DERIVATIVE = 0.2;  //此阈值为交易对涨跌幅波动的导数，当超过此阈值时，开多
-    double OPEN_SHORT_POSITION_RATE_DERIVATIVE = -0.2;  //开空
+    double OPEN_LONG_POSITION_RATE_DERIVATIVE = 0.1;  //此阈值为交易对涨跌幅波动的导数，当超过此阈值时，开多
+    double OPEN_SHORT_POSITION_RATE_DERIVATIVE = -0.1;  //开空
     double OPEN_POSITION_AVAILABLE_MARGIN_PERCENT = 0.95; //此阈值为开仓时可用保证金占总权益的百分比，当大于此阈值时才可开仓
 
 

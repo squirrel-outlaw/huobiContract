@@ -16,7 +16,7 @@ import static com.huobi.utils.PrintUtil.print;
  */
 public class TradeSystem {
     private DataManager dataManager;
-    private HuobiContractAPI huobiContractAPI;
+    public HuobiContractAPI huobiContractAPI;
 
     public TradeSystem(DataManager dataManager) {
         this.dataManager = dataManager;

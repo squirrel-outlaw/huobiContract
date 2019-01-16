@@ -28,8 +28,7 @@ public class PolicyOpenByPriceRate extends Policy {
     @Override
     public List<ContractOrderRequest> generateContractOrderRequest() {
         List<ContractOrderRequest> contractOrderRequestList = new ArrayList<>();
-
-        //
+        //如果可用仓位已经小于限制，怎不进行开仓
         if (getAvailableMarginPercent("BTC") < OPEN_POSITION_AVAILABLE_MARGIN_PERCENT) {
             print(getAvailableMarginPercent("BTC"));
             return contractOrderRequestList;

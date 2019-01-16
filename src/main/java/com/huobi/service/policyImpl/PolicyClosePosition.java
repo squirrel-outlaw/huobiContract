@@ -28,10 +28,10 @@ public class PolicyClosePosition extends Policy {
         List<ContractOrderRequest> contractOrderRequestList = new ArrayList<>();
         List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
         for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
-           //
-
-
-
+            //如果没有可用的持仓，则不处理
+            if (contractPositionInfo.getAvailable()==0){
+                continue;
+            }
             //创建contractType枚举把"this_week"转化为"CW"
             ContractType contractType = ContractType.valueOf(contractPositionInfo.getContract_type());
             String symbol = contractPositionInfo.getSymbol() + "_" + contractType.getType();
