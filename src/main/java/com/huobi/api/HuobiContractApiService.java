@@ -4,6 +4,7 @@ import com.huobi.constant.HuobiConsts;
 import com.huobi.domain.POJOs.*;
 import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.domain.response.OrderResp;
 import com.huobi.domain.response.RespBody;
 import com.huobi.domain.response.RespTick;
@@ -61,10 +62,15 @@ public interface HuobiContractApiService {
     @POST("/api/v1/contract_order")
     Call<RespBody<OrderResp>> placeOrder(@Body ContractOrderRequest contractOrderRequest);
 
+    //撤销订单
+    @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
+    @POST("/api/v1/contract_cancel")
+    Call<RespBody<CancelOrderResp>> cancelOrder(@Body ContractOrderInfoRequest orderInfoRequest);
+
     //获取合约订单信息
     @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
     @POST("/api/v1/contract_order_info")
-    Call<RespBody<ContractOrderInfo>> getContractOrderInfo(@Body ContractOrderInfoRequest orderInfoRequest);
+    Call<RespBody<List<ContractOrderInfo>>> getContractOrderInfo(@Body ContractOrderInfoRequest orderInfoRequest);
 
 
 }

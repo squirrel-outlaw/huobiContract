@@ -23,4 +23,16 @@ public abstract class Policy {
 
     public abstract List<ContractOrderRequest> generateContractOrderRequest();
 
+    //计算合约价格涨跌幅变化率
+    public double calculateContractPriceRateDerivative(){
+        double contractPriceRateLast = 0;
+        double contractPriceRate2rdLast = 0;
+        if (dataManager.BTCPriceRateList.size() >= 2) {
+            contractPriceRateLast = dataManager.BTCPriceRateList.get(dataManager.BTCPriceRateList.size() - 1);
+            contractPriceRate2rdLast = dataManager.BTCPriceRateList.get(dataManager.BTCPriceRateList.size() - 2);
+        }
+        return contractPriceRateLast-contractPriceRate2rdLast;
+    }
+
+
 }

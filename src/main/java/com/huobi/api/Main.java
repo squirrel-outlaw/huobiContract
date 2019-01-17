@@ -2,7 +2,10 @@ package com.huobi.api;
 
 import com.huobi.domain.POJOs.ContractAccountInfo;
 import com.huobi.domain.POJOs.ContractPositionInfo;
+import com.huobi.domain.enums.MergeLevel;
+import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.service.*;
 
 
@@ -15,7 +18,18 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
-        DataManager dataManager = new DataManager(initSystem);
+
+      ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
+                3200, 1, "buy", "open", 20, "limit");
+
+        ActualOrderHandler actualOrderHandler = new ActualOrderHandler(initSystem);
+        actualOrderHandler.actualRequestOrder = contractOrderRequest;
+
+        //ContractOrderInfoRequest orderInfoRequest = new ContractOrderInfoRequest(ID, "", "BTC");
+
+        //CancelOrderResp cancelOrderResp = initSystem.huobiContractAPI.cancelOrder(orderInfoRequest);
+        //  print(cancelOrderResp);
+       /* DataManager dataManager = new DataManager(initSystem);
         TradeSystem tradeSystem = new TradeSystem(dataManager);
         tradeSystem.autoTrade();
 

@@ -19,7 +19,7 @@ public class ContractOrderRequest {
     private String contract_type;         //合约类型
     private String contract_code;         //合约代码
     private String  client_order_id;       //客户自己填写和维护，这次一定要大于上一次
-    private double price;              //价格
+    private double price;                //价格
     private long  volume;                 //委托数量(张)
     private String direction;             //"buy":买 "sell":卖
     private String offset;                 //"open":开 "close":平

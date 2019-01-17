@@ -20,12 +20,14 @@ public interface TradeConditionConsts {
     int SAMPLING_INTERVAL = 3;   //自动更新DataManager中数据的间隔，单位秒
     int SAMPLING_COUNTS = 3;     //取采样个数的平均值
 
-    double OPEN_LONG_POSITION_RATE_DERIVATIVE = 0.01;  //此阈值为交易对涨跌幅波动的导数，当超过此阈值时，开多
+    double OPEN_LONG_POSITION_RATE_DERIVATIVE = 0.1;  //此阈值为交易对涨跌幅波动的导数，当超过此阈值时，开多
     double OPEN_SHORT_POSITION_RATE_DERIVATIVE = -0.1;  //开空
     double OPEN_POSITION_AVAILABLE_MARGIN_PERCENT = 95; //此阈值为开仓时可用保证金占总权益的百分比，当大于此阈值时才可开仓
 
+    double CLOSE_LONG_POSITION_RATE_DERIVATIVE_LIMIT = -0.02;   //平多时，涨跌幅的变化率必须小于此值才进行，即必须跌了0.02%以上才平仓
+    double CLOSE_SHORT_POSITION_RATE_DERIVATIVE_LIMIT = 0.02;
 
     double TAKE_PROFIT_RATE = 0.2;  //止盈比例,1代表百分之1
-    double STOP_LOSS_RATE = -0.5;    //止损比例
+    double STOP_LOSS_RATE = -0.3;    //止损比例
 
 }

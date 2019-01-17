@@ -21,6 +21,8 @@ public class Depth {
      * bids : [[7964,0.0678],[7963,0.9162]]
      * asks : [[7979,0.0736],[8020,13.6584]]
      */
+    private String ch;
+    private String mrid;
     private String id;
     private String ts;
     private List<List<Double>> bids;

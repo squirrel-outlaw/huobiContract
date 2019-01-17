@@ -7,9 +7,11 @@ import com.huobi.domain.POJOs.*;
 import com.huobi.domain.enums.*;
 import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.domain.response.RespBody;
 import com.huobi.domain.response.RespTick;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import java.util.List;
@@ -92,13 +94,21 @@ public class HuobiContractAPIImpl implements HuobiContractAPI {
     //合约下单
     @Override
     public long placeOrder(ContractOrderRequest orderRequest) {
+        double price = new BigDecimal(orderRequest.getPrice()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        orderRequest.setPrice(price);
         return executeSync(service.placeOrder(orderRequest)).getData()
                 .getOrder_id();
     }
 
+    //撤销订单
+    @Override
+    public CancelOrderResp cancelOrder(ContractOrderInfoRequest orderInfoRequest) {
+        return executeSync(service.cancelOrder(orderInfoRequest)).getData();
+    }
+
     //获取合约订单信息
     @Override
-    public ContractOrderInfo getContractOrderInfo(ContractOrderInfoRequest orderInfoRequest) {
+    public List<ContractOrderInfo> getContractOrderInfo(ContractOrderInfoRequest orderInfoRequest) {
         return executeSync(service.getContractOrderInfo(orderInfoRequest)).getData();
     }
 
