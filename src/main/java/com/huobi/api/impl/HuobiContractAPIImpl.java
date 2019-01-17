@@ -106,6 +106,12 @@ public class HuobiContractAPIImpl implements HuobiContractAPI {
         return executeSync(service.cancelOrder(orderInfoRequest)).getData();
     }
 
+    //撤销所有订单
+    @Override
+    public CancelOrderResp cancelAllOrders(ContractOrderInfoRequest orderInfoRequest) {
+        return executeSync(service.cancelAllOrders(orderInfoRequest)).getData();
+    }
+
     //获取合约订单信息
     @Override
     public List<ContractOrderInfo> getContractOrderInfo(ContractOrderInfoRequest orderInfoRequest) {

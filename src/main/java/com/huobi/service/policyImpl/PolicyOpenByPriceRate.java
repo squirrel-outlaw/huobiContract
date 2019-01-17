@@ -40,12 +40,12 @@ public class PolicyOpenByPriceRate extends Policy {
             //获取合约的最新价格
             double newestPrice = huobiContractAPI.getTrade("BTC_CQ").getPrice();
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
-                    newestPrice, 1, "buy", "open", 20, "limit");
+                    newestPrice, 1, "sell", "open", 20, "limit");
             contractOrderRequestList.add(contractOrderRequest);
         } else if (contractPriceRateDerivative < OPEN_SHORT_POSITION_RATE_DERIVATIVE) {
             double newestPrice = huobiContractAPI.getTrade("BTC_CQ").getPrice();
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
-                    newestPrice, 1, "sell", "open", 20, "limit");
+                    newestPrice, 1, "buy", "open", 20, "limit");
             contractOrderRequestList.add(contractOrderRequest);
         }
         return contractOrderRequestList;

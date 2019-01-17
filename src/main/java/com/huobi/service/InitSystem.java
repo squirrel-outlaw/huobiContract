@@ -3,6 +3,8 @@ package com.huobi.service;
 import com.huobi.api.HuobiContractAPI;
 import com.huobi.api.impl.HuobiContractAPIImpl;
 
+import com.huobi.domain.request.ContractOrderInfoRequest;
+import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.utils.security.AESEncryption;
 
 import java.io.IOException;
@@ -28,6 +30,11 @@ public class InitSystem {
 
         //初始化第二天零点时候的时间戳
         this.tomorrowZeroHourTimestamp = getHourPointTimestamp(24);
+        //初始化时取消所有委托订单
+        try {
+            huobiContractAPI.cancelAllOrders(new ContractOrderInfoRequest(0, "", "BTC"));
+        } catch (IllegalStateException E) {
+        }
     }
 
     private String[] getAPIKeys() {

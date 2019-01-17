@@ -2,6 +2,7 @@ package com.huobi.service;
 
 import com.huobi.api.HuobiContractAPI;
 import com.huobi.domain.POJOs.ContractOrderInfo;
+import com.huobi.domain.POJOs.ContractPositionInfo;
 import com.huobi.domain.enums.MergeLevel;
 import com.huobi.domain.enums.OrderStatus;
 import com.huobi.domain.request.ContractOrderInfoRequest;
@@ -36,8 +37,8 @@ public class ActualOrderHandler {
     public ContractOrderRequest actualRequestOrder;
     private long orderID;
 
-    public ActualOrderHandler(InitSystem initSystem) {
-        this.huobiContractAPI = initSystem.huobiContractAPI;
+    public ActualOrderHandler(HuobiContractAPI huobiContractAPI) {
+        this.huobiContractAPI = huobiContractAPI;
         actualHandleOrder();
     }
 
@@ -52,6 +53,9 @@ public class ActualOrderHandler {
                     return;
                 }
                 if (virtualRequestOrder == null) {
+                    if (!judgeCanOrderOrNot(actualRequestOrder)) {
+                        return;
+                    }
                     virtualRequestOrder = actualRequestOrder;
                     actualRequestOrder = null;
                     //第一次进行买单或卖单的处理，该函数根据买单或卖单，确定不同的挂单价
@@ -65,11 +69,11 @@ public class ActualOrderHandler {
 
                 print(orderDetail);
                 //如果订单是完全成交状态，则此次交易完全结束，把虚拟订单置为null
-                if (orderDetail.getStatus().equals(OrderStatus.FILLED)) {
+                if (orderDetail.getStatus() == (OrderStatus.FILLED.getCode())) {
                     print("完全成交");
                     virtualRequestOrder = null;
                     //如果订单没有完全成交，先撤销订单
-                } else if (orderDetail.getStatus().equals(OrderStatus.PARTIAL_FILLED) || orderDetail.getStatus().equals(OrderStatus.SUBMITTED)) {
+                } else if (orderDetail.getStatus() == (OrderStatus.PARTIAL_FILLED.getCode()) || orderDetail.getStatus() == (OrderStatus.SUBMITTED.getCode())) {
                     CancelOrderResp cancelOrderResp = huobiContractAPI.cancelOrder(orderInfoRequest);
                     if (cancelOrderResp.getSuccesses().equals(String.valueOf(orderID))) {
                         return;
@@ -78,8 +82,8 @@ public class ActualOrderHandler {
                     //如果撤单失败，说明已经成交，则把虚拟订单置为null
                     virtualRequestOrder = null;
                     //如果订单状态为撤销或部分成交撤销
-                } else if (orderDetail.getStatus().equals(OrderStatus.CANCELED) || orderDetail.getStatus().equals(OrderStatus
-                        .PARTIAL_CANCELED)) {
+                } else if (orderDetail.getStatus() == (OrderStatus.CANCELED.getCode()) || orderDetail.getStatus() == (OrderStatus
+                        .PARTIAL_CANCELED.getCode())) {
                     //根据订单实际成交的情况，更新virtualFilledOrder对象
                     long tradeVolume = orderDetail.getTrade_volume();
                     long volumeUnfilled = virtualRequestOrder.getVolume() - tradeVolume;
@@ -114,4 +118,18 @@ public class ActualOrderHandler {
         print(virtualRequestOrder);
         orderID = huobiContractAPI.placeOrder(virtualRequestOrder);
     }
+
+    private boolean judgeCanOrderOrNot(ContractOrderRequest actualRequestOrder) {
+        String needCloseSymbol = actualRequestOrder.getSymbol();
+        long needCloseVolume = actualRequestOrder.getVolume();
+        String needCloseDirection = actualRequestOrder.getDirection();
+        List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
+        for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
+            if (contractPositionInfo.getSymbol().equals(needCloseSymbol) && (!contractPositionInfo.getDirection().equals(needCloseSymbol)) && contractPositionInfo.getAvailable() >= needCloseVolume) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

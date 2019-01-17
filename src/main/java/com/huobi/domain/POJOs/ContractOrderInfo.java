@@ -32,7 +32,7 @@ public class ContractOrderInfo {
     private double trade_avg_price;
     private double margin_frozen;
     private double profit;
-    private OrderStatus status;
+    private int status;
     private String order_type;
     private String order_source;
 }

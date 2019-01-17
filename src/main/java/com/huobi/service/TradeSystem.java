@@ -24,8 +24,11 @@ public class TradeSystem {
     }
 
     public void autoTrade() {
+        ActualOrderHandler actualOrderHandler = new ActualOrderHandler(huobiContractAPI);
+
         Policy policyClosePosition = new PolicyClosePosition(dataManager);
         Policy policyOpenByPriceRate = new PolicyOpenByPriceRate(dataManager);
+
 
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -34,13 +37,17 @@ public class TradeSystem {
                     //根据平仓策略下订单
                     List<ContractOrderRequest> closeRequestList = policyClosePosition.generateContractOrderRequest();
                     for (ContractOrderRequest closeContractOrderRequest : closeRequestList) {
-                        huobiContractAPI.placeOrder(closeContractOrderRequest);
+                        if (actualOrderHandler.actualRequestOrder == null) {
+                            actualOrderHandler.actualRequestOrder = closeContractOrderRequest;
+                        }
                     }
 
                     //根据开仓策略下订单
                     List<ContractOrderRequest> openRequestlist = policyOpenByPriceRate.generateContractOrderRequest();
                     if (openRequestlist.size() > 0) {
-                        long orderID = huobiContractAPI.placeOrder(openRequestlist.get(0));
+                        if (actualOrderHandler.actualRequestOrder == null) {
+                            actualOrderHandler.actualRequestOrder = openRequestlist.get(0);
+                        }
                     }
                 } catch (IllegalStateException e) {
                 }

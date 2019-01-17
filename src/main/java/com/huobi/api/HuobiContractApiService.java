@@ -67,10 +67,14 @@ public interface HuobiContractApiService {
     @POST("/api/v1/contract_cancel")
     Call<RespBody<CancelOrderResp>> cancelOrder(@Body ContractOrderInfoRequest orderInfoRequest);
 
+    //撤销订单
+    @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
+    @POST("/api/v1/contract_cancelall")
+    Call<RespBody<CancelOrderResp>> cancelAllOrders(@Body ContractOrderInfoRequest orderInfoRequest);
+
     //获取合约订单信息
     @Headers(HuobiConsts.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
     @POST("/api/v1/contract_order_info")
     Call<RespBody<List<ContractOrderInfo>>> getContractOrderInfo(@Body ContractOrderInfoRequest orderInfoRequest);
-
 
 }

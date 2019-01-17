@@ -18,20 +18,12 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
-
-      ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
-                3200, 1, "buy", "open", 20, "limit");
-
-        ActualOrderHandler actualOrderHandler = new ActualOrderHandler(initSystem);
-        actualOrderHandler.actualRequestOrder = contractOrderRequest;
-
-        //ContractOrderInfoRequest orderInfoRequest = new ContractOrderInfoRequest(ID, "", "BTC");
-
-        //CancelOrderResp cancelOrderResp = initSystem.huobiContractAPI.cancelOrder(orderInfoRequest);
-        //  print(cancelOrderResp);
-       /* DataManager dataManager = new DataManager(initSystem);
+        DataManager dataManager = new DataManager(initSystem);
         TradeSystem tradeSystem = new TradeSystem(dataManager);
         tradeSystem.autoTrade();
+
+
+
 
 
 

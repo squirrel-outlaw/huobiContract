@@ -42,6 +42,9 @@ public interface HuobiContractAPI {
     //撤销订单
     CancelOrderResp cancelOrder(ContractOrderInfoRequest orderInfoRequest);
 
+    //撤销所有订单
+    CancelOrderResp cancelAllOrders(ContractOrderInfoRequest orderInfoRequest);
+
     //获取合约订单信息
     List<ContractOrderInfo> getContractOrderInfo(ContractOrderInfoRequest orderInfoRequest);
 
