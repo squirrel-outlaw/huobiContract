@@ -14,10 +14,12 @@ import java.util.List;
 public abstract class Policy {
 
     protected DataManager dataManager;
+    protected ActualOrderHandler actualOrderHandler;
     protected HuobiContractAPI huobiContractAPI;
 
-    public Policy(DataManager dataManager) {
+    public Policy(DataManager dataManager, ActualOrderHandler actualOrderHandler) {
         this.dataManager = dataManager;
+        this.actualOrderHandler=actualOrderHandler;
         this.huobiContractAPI=dataManager.initSystem.huobiContractAPI;
     }
 

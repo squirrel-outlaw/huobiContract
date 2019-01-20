@@ -52,15 +52,12 @@ public class ActualOrderHandler {
                 if (actualRequestOrder == null && virtualRequestOrder == null) {
                     return;
                 }
-                if (virtualRequestOrder == null) {
-                    if (!judgeCanOrderOrNot(actualRequestOrder)) {
-                        return;
-                    }
-                    virtualRequestOrder = actualRequestOrder;
-                    actualRequestOrder = null;
+                if (actualRequestOrder != null && virtualRequestOrder == null) {
+                    virtualRequestOrder = new ContractOrderRequest(actualRequestOrder);
                     //第一次进行买单或卖单的处理，该函数根据买单或卖单，确定不同的挂单价
                     buySellRequestOrderHandle();
                 }
+
 
                 //查询上一次订单的成交详情
                 ContractOrderInfoRequest orderInfoRequest = new ContractOrderInfoRequest(orderID, "", virtualRequestOrder
@@ -72,6 +69,7 @@ public class ActualOrderHandler {
                 if (orderDetail.getStatus() == (OrderStatus.FILLED.getCode())) {
                     print("完全成交");
                     virtualRequestOrder = null;
+                    actualRequestOrder=null;
                     //如果订单没有完全成交，先撤销订单
                 } else if (orderDetail.getStatus() == (OrderStatus.PARTIAL_FILLED.getCode()) || orderDetail.getStatus() == (OrderStatus.SUBMITTED.getCode())) {
                     CancelOrderResp cancelOrderResp = huobiContractAPI.cancelOrder(orderInfoRequest);
@@ -81,6 +79,7 @@ public class ActualOrderHandler {
                     print("完全成交");
                     //如果撤单失败，说明已经成交，则把虚拟订单置为null
                     virtualRequestOrder = null;
+                    actualRequestOrder=null;
                     //如果订单状态为撤销或部分成交撤销
                 } else if (orderDetail.getStatus() == (OrderStatus.CANCELED.getCode()) || orderDetail.getStatus() == (OrderStatus
                         .PARTIAL_CANCELED.getCode())) {
@@ -125,7 +124,7 @@ public class ActualOrderHandler {
         String needCloseDirection = actualRequestOrder.getDirection();
         List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
         for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
-            if (contractPositionInfo.getSymbol().equals(needCloseSymbol) && (!contractPositionInfo.getDirection().equals(needCloseSymbol)) && contractPositionInfo.getAvailable() >= needCloseVolume) {
+            if (contractPositionInfo.getSymbol().equals(needCloseSymbol) && (!contractPositionInfo.getDirection().equals(needCloseDirection)) && contractPositionInfo.getAvailable() >= needCloseVolume) {
                 return true;
             }
         }

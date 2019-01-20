@@ -4,6 +4,7 @@ package com.huobi.service.policyImpl;
 import com.huobi.domain.POJOs.ContractAccountInfo;
 import com.huobi.domain.POJOs.ContractPositionInfo;
 import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.service.ActualOrderHandler;
 import com.huobi.service.DataManager;
 import com.huobi.service.Policy;
 
@@ -21,28 +22,31 @@ import static com.huobi.utils.PrintUtil.print;
  */
 public class PolicyOpenByPriceRate extends Policy {
 
-    public PolicyOpenByPriceRate(DataManager dataManager) {
-        super(dataManager);
+    public PolicyOpenByPriceRate(DataManager dataManager, ActualOrderHandler actualOrderHandler) {
+        super(dataManager, actualOrderHandler);
     }
 
     @Override
     public List<ContractOrderRequest> generateContractOrderRequest() {
         List<ContractOrderRequest> contractOrderRequestList = new ArrayList<>();
         //如果可用仓位已经小于限制，怎不进行开仓
-        if (getAvailableMarginPercent("BTC") < OPEN_POSITION_AVAILABLE_MARGIN_PERCENT) {
+        if (getAvailableMarginPercent("BTC") < OPEN_POSITION_AVAILABLE_MARGIN_PERCENT || actualOrderHandler.actualRequestOrder != null) {
             print(getAvailableMarginPercent("BTC"));
             return contractOrderRequestList;
         }
         //计算合约价格涨跌幅变化率
-        double contractPriceRateDerivative=calculateContractPriceRateDerivative();
-        print(contractPriceRateDerivative);
+        double contractPriceRateDerivative = calculateContractPriceRateDerivative();
         if (contractPriceRateDerivative > OPEN_LONG_POSITION_RATE_DERIVATIVE) {
+            print("开多策略成立");
+            print(contractPriceRateDerivative);
             //获取合约的最新价格
             double newestPrice = huobiContractAPI.getTrade("BTC_CQ").getPrice();
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
                     newestPrice, 1, "sell", "open", 20, "limit");
             contractOrderRequestList.add(contractOrderRequest);
         } else if (contractPriceRateDerivative < OPEN_SHORT_POSITION_RATE_DERIVATIVE) {
+            print("开空策略成立");
+            print(contractPriceRateDerivative);
             double newestPrice = huobiContractAPI.getTrade("BTC_CQ").getPrice();
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", "", "",
                     newestPrice, 1, "buy", "open", 20, "limit");

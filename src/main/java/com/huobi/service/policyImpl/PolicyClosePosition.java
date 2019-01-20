@@ -3,6 +3,7 @@ package com.huobi.service.policyImpl;
 import com.huobi.domain.POJOs.ContractPositionInfo;
 import com.huobi.domain.enums.ContractType;
 import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.service.ActualOrderHandler;
 import com.huobi.service.DataManager;
 import com.huobi.service.Policy;
 
@@ -20,8 +21,8 @@ import static com.huobi.utils.PrintUtil.print;
  */
 public class PolicyClosePosition extends Policy {
 
-    public PolicyClosePosition(DataManager dataManager) {
-        super(dataManager);
+    public PolicyClosePosition(DataManager dataManager, ActualOrderHandler actualOrderHandler) {
+        super(dataManager, actualOrderHandler);
     }
 
     @Override
@@ -30,19 +31,18 @@ public class PolicyClosePosition extends Policy {
         List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
         for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
             //如果没有可用的持仓，则不处理
-            if (contractPositionInfo.getAvailable() == 0) {
+            if (contractPositionInfo.getAvailable() == 0 || actualOrderHandler.actualRequestOrder != null) {
                 continue;
             }
             //创建contractSymbol
-            String contractSymbol = getContractSymbol(contractPositionInfo.getSymbol() ,contractPositionInfo.getContract_type());
+            String contractSymbol = getContractSymbol(contractPositionInfo.getSymbol(), contractPositionInfo.getContract_type());
             //获取合约的最新价格
             double newestPrice = huobiContractAPI.getTrade(contractSymbol).getPrice();
             //获取持仓成本价
             double costPrice = contractPositionInfo.getCost_hold();
             //盈亏比例
             double profitLossRate = (newestPrice - costPrice) * 100 / costPrice;
-            print(profitLossRate);
-
+            print("盈亏比例" + profitLossRate);
             double contractPriceRateDerivative = calculateContractPriceRateDerivative();
             if (contractPositionInfo.getDirection().equals("buy")) {
                 //做多时的平仓策略

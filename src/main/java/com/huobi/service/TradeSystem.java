@@ -26,8 +26,8 @@ public class TradeSystem {
     public void autoTrade() {
         ActualOrderHandler actualOrderHandler = new ActualOrderHandler(huobiContractAPI);
 
-        Policy policyClosePosition = new PolicyClosePosition(dataManager);
-        Policy policyOpenByPriceRate = new PolicyOpenByPriceRate(dataManager);
+        Policy policyClosePosition = new PolicyClosePosition(dataManager,actualOrderHandler);
+        Policy policyOpenByPriceRate = new PolicyOpenByPriceRate(dataManager,actualOrderHandler);
 
 
         Timer timer = new Timer();

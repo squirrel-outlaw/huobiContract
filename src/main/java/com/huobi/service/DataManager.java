@@ -21,7 +21,8 @@ public class DataManager {
     public InitSystem initSystem;
 
     public Map<String, Double> allSymbolsTodayOpenPriceMap = new HashMap<>();  //所有合约交易对当天的开盘价
-    public List<Double> BTCPriceRateList;  //ETH实时价格涨跌幅列表，结果为涨跌幅*100
+    public List<Double> BTCPriceRateList;  //BTC实时价格涨跌幅列表，结果为涨跌幅*100
+    public List<Double> BTCPriceRateList15S;
 
 
     public DataManager(InitSystem initSystem) {
@@ -29,6 +30,7 @@ public class DataManager {
         //初始化所有交易对当天开盘价格
         updateAllSymbolsTodayOpenPrice();
         BTCPriceRateList = timingUpdateRealTimePriceRate(SAMPLING_INTERVAL, SAMPLING_COUNTS, "BTC_CQ");
+        BTCPriceRateList15S = timingUpdateRealTimePriceRate(SAMPLING_INTERVAL_15S, SAMPLING_COUNTS, "BTC_CQ");
     }
 
 

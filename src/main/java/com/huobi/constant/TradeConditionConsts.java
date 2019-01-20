@@ -18,6 +18,7 @@ public interface TradeConditionConsts {
     int AUTO_TRADE_INTERVAL = 1 * 1000;   //自动交易的间隔时间，单位ms
 
     int SAMPLING_INTERVAL = 3;   //自动更新DataManager中数据的间隔，单位秒
+    int SAMPLING_INTERVAL_15S = 15;   //自动更新DataManager中数据的间隔，单位秒
     int SAMPLING_COUNTS = 3;     //取采样个数的平均值
 
     double OPEN_LONG_POSITION_RATE_DERIVATIVE = 0.1;  //此阈值为交易对涨跌幅波动的导数，当超过此阈值时，开多
@@ -28,6 +29,6 @@ public interface TradeConditionConsts {
     double CLOSE_SHORT_POSITION_RATE_DERIVATIVE_LIMIT = 0.02;
 
     double TAKE_PROFIT_RATE = 0.2;  //止盈比例,1代表百分之1
-    double STOP_LOSS_RATE = -0.3;    //止损比例
+    double STOP_LOSS_RATE = -0.2;    //止损比例
 
 }
