@@ -14,7 +14,7 @@ public interface TradeConditionConsts {
 
     int REALTIME_PRICE_LIST_FIXED_LENGTH = 5;     // 实时价格列表保存的实时价格的数量
 
-    int HANG_ORDER_INTERVAL = 2 * 1000;   //取消订单，重新挂单间隔时间，单位ms
+    int HANG_ORDER_INTERVAL = 1 * 1000;   //取消订单，重新挂单间隔时间，单位ms
     int AUTO_TRADE_INTERVAL = 1 * 1000;   //自动交易的间隔时间，单位ms
 
     int SAMPLING_INTERVAL = 3;   //自动更新DataManager中数据的间隔，单位秒
@@ -30,5 +30,11 @@ public interface TradeConditionConsts {
 
     double TAKE_PROFIT_RATE = 0.2;  //止盈比例,1代表百分之1
     double STOP_LOSS_RATE = -0.2;    //止损比例
+
+    double MA_BORDER_CORRECTION_UP = 0.2;
+    double MA_BORDER_CORRECTION_DOWN = -0.2;
+
+    double MAX_OPEN_POSITION_PERCENT = 0.05;
+
 
 }

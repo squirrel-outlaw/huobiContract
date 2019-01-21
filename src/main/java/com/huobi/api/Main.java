@@ -2,11 +2,14 @@ package com.huobi.api;
 
 import com.huobi.domain.POJOs.ContractAccountInfo;
 import com.huobi.domain.POJOs.ContractPositionInfo;
+import com.huobi.domain.POJOs.Kline;
 import com.huobi.domain.enums.MergeLevel;
+import com.huobi.domain.enums.Resolution;
 import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
 import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.service.*;
+import com.huobi.service.policyImpl.PolicyByMA;
 
 
 import java.util.List;
@@ -18,12 +21,9 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
-        DataManager dataManager = new DataManager(initSystem);
-        TradeSystem tradeSystem = new TradeSystem(dataManager);
-        tradeSystem.autoTrade();
-
-
-
+      ActualOrderHandler actualOrderHandler=new ActualOrderHandler(initSystem.huobiContractAPI);
+        PolicyByMA policyByMA=new PolicyByMA(initSystem,actualOrderHandler);
+        policyByMA.autoTrade();
 
 
 
