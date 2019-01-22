@@ -42,7 +42,7 @@ public class PolicyByMA {
                     if (actualPositionStatus == null) {
                         List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
                         String initPositionStatus = null;
-                        //查询已经开的空头数量
+                        //查询已经是否已经开仓
                         for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
                             if (contractPositionInfo.getSymbol().equals("BTC") && contractPositionInfo
                                     .getContract_type().equals("quarter") && contractPositionInfo.getVolume() > 0) {
@@ -52,9 +52,10 @@ public class PolicyByMA {
                         }
                         if (initPositionStatus != null) {
                             actualPositionStatus = initPositionStatus;
+                        } else {
+                            actualPositionStatus = "empty";
                         }
-                        actualPositionStatus = "empty";
-                        print("actualPositionStatus初始化后："+actualPositionStatus);
+                        print("actualPositionStatus初始化后：" + actualPositionStatus);
                     }
 
 
@@ -62,22 +63,22 @@ public class PolicyByMA {
                     double MA5DerFirst = MA5DerivativeList.get(0);
                     double MA5DerSecond = MA5DerivativeList.get(1);
 
-                    print("MA5DerFirst:"+MA5DerFirst);
-                    print("MA5DerSecond:"+MA5DerSecond);
-                    print("MA5DerFirst - MA5DerSecond:"+(MA5DerFirst - MA5DerSecond));
+                    print("MA5DerFirst:" + MA5DerFirst);
+                    print("MA5DerSecond:" + MA5DerSecond);
+                    print("MA5DerFirst - MA5DerSecond:" + (MA5DerFirst - MA5DerSecond));
 
 
-                    if (MA5DerSecond < 0 && MA5DerFirst > 0.2 && (MA5DerFirst - MA5DerSecond) > 0.4) {
+                    if (MA5DerSecond < 0 && MA5DerFirst > 0.3 && (MA5DerFirst - MA5DerSecond) > 0.5) {
                         targetPositionStatus = "buy";
                     }
-                    if (MA5DerSecond > 0 && MA5DerFirst > 0.2) {
+                    if (MA5DerSecond > 0 && MA5DerFirst > 0.3) {
                         targetPositionStatus = "buy";
                     }
 
-                    if (MA5DerSecond > 0 && MA5DerFirst < -0.2 && (MA5DerFirst - MA5DerSecond) < -0.4) {
+                    if (MA5DerSecond > 0 && MA5DerFirst < -0.3 && (MA5DerFirst - MA5DerSecond) < -0.5) {
                         targetPositionStatus = "sell";
                     }
-                    if (MA5DerSecond < 0 && MA5DerFirst < -0.2) {
+                    if (MA5DerSecond < 0 && MA5DerFirst < -0.3) {
                         targetPositionStatus = "sell";
                     }
 
