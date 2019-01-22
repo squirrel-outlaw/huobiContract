@@ -12,6 +12,7 @@ import com.huobi.service.*;
 import com.huobi.service.policyImpl.PolicyByMA;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.huobi.utils.PrintUtil.print;
@@ -21,10 +22,29 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
-      ActualOrderHandler actualOrderHandler=new ActualOrderHandler(initSystem.huobiContractAPI);
-        PolicyByMA policyByMA=new PolicyByMA(initSystem,actualOrderHandler);
-        policyByMA.autoTrade();
+         ActualOrderHandler actualOrderHandler=new ActualOrderHandler(initSystem.huobiContractAPI);
+         PolicyByMA policyByMA=new PolicyByMA(initSystem,actualOrderHandler);
+          policyByMA.autoTrade();
 
+
+
+       /* List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M5, "2000");
+        List<Double> MA5List = new ArrayList<>();
+        for (int j = 2000; j >= 5; j--) {
+            double MA5Total = 0;
+            for (int i = j - 1; i >= j - 5; i--) {
+                MA5Total = MA5Total + klineList.get(i).getClose();
+            }
+            MA5List.add(MA5Total / 5);
+        }
+
+        List<Double> MA5RateList = new ArrayList<>();
+
+        for (int i = 0; i < MA5List.size() - 1; i++) {
+            MA5RateList.add((double)Math.round((MA5List.get(i) - MA5List.get(i + 1)) * 100 )/ 100);
+        }
+
+        print(MA5RateList);
 
 
 
