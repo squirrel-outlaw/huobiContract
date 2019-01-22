@@ -34,7 +34,7 @@ public interface TradeConditionConsts {
     double MA_BORDER_CORRECTION_UP = 0.2;
     double MA_BORDER_CORRECTION_DOWN = -0.2;
 
-    double MAX_OPEN_POSITION_PERCENT = 0.05;
+    double MAX_OPEN_POSITION_PERCENT = 0.03;
 
 
 }

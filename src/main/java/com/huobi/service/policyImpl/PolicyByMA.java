@@ -54,12 +54,18 @@ public class PolicyByMA {
                             actualPositionStatus = initPositionStatus;
                         }
                         actualPositionStatus = "empty";
+                        print("actualPositionStatus初始化后："+actualPositionStatus);
                     }
 
 
                     List<Double> MA5DerivativeList = calculateMA5Derivative(10);
                     double MA5DerFirst = MA5DerivativeList.get(0);
                     double MA5DerSecond = MA5DerivativeList.get(1);
+
+                    print("MA5DerFirst:"+MA5DerFirst);
+                    print("MA5DerSecond:"+MA5DerSecond);
+                    print("MA5DerFirst - MA5DerSecond:"+(MA5DerFirst - MA5DerSecond));
+
 
                     if (MA5DerSecond < 0 && MA5DerFirst > 0.2 && (MA5DerFirst - MA5DerSecond) > 0.4) {
                         targetPositionStatus = "buy";
@@ -97,6 +103,7 @@ public class PolicyByMA {
                                 } catch (Exception e) {
                                 }
                             }
+                            print("已平掉空头仓位");
                         }
                         //计算可开的多头数量
                         double availableMargin = getAvailableMargin("BTC");
@@ -114,6 +121,7 @@ public class PolicyByMA {
                                 }
                             }
                             actualPositionStatus = "buy";
+                            print("已开多");
                         }
                     }
 
@@ -139,6 +147,7 @@ public class PolicyByMA {
                                 } catch (Exception e) {
                                 }
                             }
+                            print("已平掉多头仓位");
                         }
                         //计算可开的空头数量
                         double availableMargin = getAvailableMargin("BTC");
@@ -156,6 +165,7 @@ public class PolicyByMA {
                                 }
                             }
                             actualPositionStatus = "sell";
+                            print("已开空");
                         }
                     }
                 } catch (IllegalStateException e) {
@@ -210,7 +220,7 @@ public class PolicyByMA {
         List<Double> MA5List = new ArrayList<>();
         List<Double> MA5DerivativeList = new ArrayList<>();
         //生成MA5List
-        for (int j = klineSize; j >= 5; j--) {
+        for (int j = klineList.size(); j >= 5; j--) {
             double MA5Total = 0;
             for (int i = j - 1; i >= j - 5; i--) {
                 MA5Total = MA5Total + klineList.get(i).getClose();
