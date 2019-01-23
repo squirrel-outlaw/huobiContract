@@ -185,7 +185,7 @@ public class PolicyByMA {
 
     //生成MA的导数系列，列表前面为最新的MA
     private List<Double> calculateMA5Derivative(int klineSize) {
-        List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M15, String.valueOf(klineSize));
+        List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M5, String.valueOf(klineSize));
         List<Double> MA5List = new ArrayList<>();
         List<Double> MA5DerivativeList = new ArrayList<>();
         //生成MA5List

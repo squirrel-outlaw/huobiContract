@@ -104,7 +104,7 @@ task copyJar(dependsOn: del) {
         ssh.run {
             session(remotes.deployServer) {
                 println 'start copying jar...'
-                put from: shadowJar.archivePath, into: '/usr/local/huobi'
+                put from: shadowJar.archivePath, into: '/usr/local/huobi/temp'
             }
         }
     }
@@ -115,7 +115,7 @@ task copyFileFromAliyun() {
         ssh.run {
             session(remotes.deployServer) {
                 println 'start copying file...'
-                get from: '/usr/local/huobi/logs', into: buildDir
+                get from: '/usr/local/huobi/temp/data', into: buildDir
             }
         }
     }

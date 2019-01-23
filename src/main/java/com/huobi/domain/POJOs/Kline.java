@@ -23,4 +23,7 @@ public class Kline {
     private BigDecimal amount;
     private BigDecimal vol;
     private String version;
+    //用来存放自定义的MA和MA_Derivative
+    private double MA;
+    private double MA_Derivative;
 }
