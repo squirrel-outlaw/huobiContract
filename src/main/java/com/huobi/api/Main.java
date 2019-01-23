@@ -27,7 +27,7 @@ public class Main {
         // ActualOrderHandler actualOrderHandler = new ActualOrderHandler(initSystem.huobiContractAPI);
         // PolicyByMA policyByMA=new PolicyByMA(initSystem,actualOrderHandler);
         // policyByMA.autoTrade();
-        List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M5, "2000");
+        List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M1, "2000");
         MA.writeToExcel(klineList);
 
 
