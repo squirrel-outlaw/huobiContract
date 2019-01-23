@@ -31,8 +31,10 @@ public interface TradeConditionConsts {
     double TAKE_PROFIT_RATE = 0.2;  //止盈比例,1代表百分之1
     double STOP_LOSS_RATE = -0.2;    //止损比例
 
-    double MA_BORDER_CORRECTION_UP = 0.2;
-    double MA_BORDER_CORRECTION_DOWN = -0.2;
+    double MA_DERIVATIVE_BORDER_LONG_BIG = 1.5;     //根据MA导数的大小判断开多的上边界
+    double MA_DERIVATIVE_BORDER_LONG_SMALL = 0.5;   //根据MA导数的大小判断开多的下边界
+    double MA_DERIVATIVE_BORDER_SHORT_SMALL = -0.5;  //根据MA导数的大小判断开空的下边界
+    double MA_DERIVATIVE_BORDER_SHORT_BIG = -1.5;    //根据MA导数的大小判断开空的上边界
 
     double MAX_OPEN_POSITION_PERCENT = 0.03;
 

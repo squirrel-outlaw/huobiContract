@@ -9,8 +9,10 @@ import com.huobi.domain.enums.OrderStatus;
 import com.huobi.domain.enums.Resolution;
 import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
+import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.service.ActualOrderHandler;
 import com.huobi.service.InitSystem;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ import java.util.TimerTask;
 import static com.huobi.constant.TradeConditionConsts.*;
 import static com.huobi.utils.PrintUtil.print;
 
-
+@Slf4j
 public class PolicyByMA {
     private HuobiContractAPI huobiContractAPI;
     private String actualPositionStatus;  //实际持仓状态，已经开多或开空
@@ -34,6 +36,7 @@ public class PolicyByMA {
     }
 
     public void autoTrade() {
+        log.info("系统开始运行");
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
@@ -55,7 +58,6 @@ public class PolicyByMA {
                         } else {
                             actualPositionStatus = "empty";
                         }
-                        print("actualPositionStatus初始化后：" + actualPositionStatus);
                     }
 
 
@@ -63,130 +65,96 @@ public class PolicyByMA {
                     double MA5DerFirst = MA5DerivativeList.get(0);
                     double MA5DerSecond = MA5DerivativeList.get(1);
 
-                    print("MA5DerFirst:" + MA5DerFirst);
-                    print("MA5DerSecond:" + MA5DerSecond);
-                    print("MA5DerFirst - MA5DerSecond:" + (MA5DerFirst - MA5DerSecond));
+                    print("MA5DerFirst:" + MA5DerFirst + "    " + "MA5DerSecond:" + MA5DerSecond);
 
-
-                    if (MA5DerSecond < 0 && MA5DerFirst > 0.3 && (MA5DerFirst - MA5DerSecond) > 0.5) {
+                    if (MA5DerFirst >= MA_DERIVATIVE_BORDER_LONG_BIG) {
                         targetPositionStatus = "buy";
                     }
-                    if (MA5DerSecond > 0 && MA5DerFirst > 0.3) {
-                        targetPositionStatus = "buy";
+                    if (MA5DerFirst >= MA_DERIVATIVE_BORDER_LONG_SMALL && MA5DerFirst < MA_DERIVATIVE_BORDER_LONG_BIG) {
+                        if (actualPositionStatus.equals("sell")) {
+                            targetPositionStatus = "empty";
+                        } else {
+                            targetPositionStatus = actualPositionStatus;
+                        }
                     }
-
-                    if (MA5DerSecond > 0 && MA5DerFirst < -0.3 && (MA5DerFirst - MA5DerSecond) < -0.5) {
+                    if (MA5DerFirst >= MA_DERIVATIVE_BORDER_SHORT_SMALL && MA5DerFirst < MA_DERIVATIVE_BORDER_LONG_SMALL) {
+                        targetPositionStatus = actualPositionStatus;
+                    }
+                    if (MA5DerFirst >= MA_DERIVATIVE_BORDER_SHORT_BIG && MA5DerFirst < MA_DERIVATIVE_BORDER_SHORT_SMALL) {
+                        if (actualPositionStatus.equals("buy")) {
+                            targetPositionStatus = "empty";
+                        } else {
+                            targetPositionStatus = actualPositionStatus;
+                        }
+                    }
+                    if (MA5DerFirst < MA_DERIVATIVE_BORDER_SHORT_BIG) {
                         targetPositionStatus = "sell";
                     }
-                    if (MA5DerSecond < 0 && MA5DerFirst < -0.3) {
-                        targetPositionStatus = "sell";
-                    }
-
 
                     if (targetPositionStatus.equals("buy") && (!actualPositionStatus.equals("buy"))) {
-                        List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
-                        long positionVolume = 0;
-                        //查询已经开的空头数量
-                        for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
-                            if (contractPositionInfo.getSymbol().equals("BTC") && contractPositionInfo.getContract_type().equals("quarter") && contractPositionInfo.getDirection().equals("sell")) {
-                                positionVolume = contractPositionInfo.getVolume();
-                            }
-                        }
+                        //查询空头持仓数量
+                        long positionVolume = queryPositionVolume("sell");
                         //平掉空头仓位
                         if (positionVolume > 0) {
-                            ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", 0,
-                                    positionVolume, "buy", "close", 20, "opponent");
-                            long orderID = huobiContractAPI.placeOrder(contractOrderRequest);
-                            //等待交易完成
-                            while (!checkOrderFinishedOrNot(orderID)) {
-                                try {
-                                    Thread.sleep(500);
-                                } catch (Exception e) {
-                                }
-                            }
-                            print("已平掉空头仓位");
+                            ContractOrderInfo finishedOrder = finishOrder(positionVolume, "buy", "close", "opponent");
+                            log.info("已平掉空头仓位;" + "平仓价为：" + finishedOrder.getPrice() + ";" + "平仓数量为：" + finishedOrder.getTrade_volume());
+                            actualPositionStatus="empty";
                         }
                         //计算可开的多头数量
                         double availableMargin = getAvailableMargin("BTC");
                         long openVolume = getMaxOpenVolume(availableMargin * MAX_OPEN_POSITION_PERCENT, "BTC_CQ");
                         //开多
                         if (openVolume > 0) {
-                            ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", 0,
-                                    openVolume, "buy", "open", 20, "opponent");
-                            long orderID = huobiContractAPI.placeOrder(contractOrderRequest);
-                            //等待交易完成
-                            while (!checkOrderFinishedOrNot(orderID)) {
-                                try {
-                                    Thread.sleep(500);
-                                } catch (Exception e) {
-                                }
-                            }
+                            ContractOrderInfo finishedOrder = finishOrder(openVolume, "buy", "open", "opponent");
                             actualPositionStatus = "buy";
-                            print("已开多");
+                            log.info("已开多;" + "开仓价为：" + finishedOrder.getPrice() + ";" + "开仓数量为：" + finishedOrder.getTrade_volume());
                         }
                     }
 
 
                     if (targetPositionStatus.equals("sell") && (!actualPositionStatus.equals("sell"))) {
-                        List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
-                        long positionVolume = 0;
-                        //查询已经开的多头数量
-                        for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
-                            if (contractPositionInfo.getSymbol().equals("BTC") && contractPositionInfo.getContract_type().equals("quarter") && contractPositionInfo.getDirection().equals("buy")) {
-                                positionVolume = contractPositionInfo.getVolume();
-                            }
-                        }
+                        //查询多头持仓数量
+                        long positionVolume = queryPositionVolume("buy");
                         //平掉多头仓位
                         if (positionVolume > 0) {
-                            ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", 0,
-                                    positionVolume, "sell", "close", 20, "opponent");
-                            long orderID = huobiContractAPI.placeOrder(contractOrderRequest);
-                            //等待交易完成
-                            while (!checkOrderFinishedOrNot(orderID)) {
-                                try {
-                                    Thread.sleep(500);
-                                } catch (Exception e) {
-                                }
-                            }
-                            print("已平掉多头仓位");
+                            ContractOrderInfo finishedOrder = finishOrder(positionVolume, "sell", "close", "opponent");
+                            log.info("已平掉多头仓位;"+"平仓价为："+finishedOrder.getPrice()+";"+"平仓数量为："+finishedOrder.getTrade_volume());
+                            actualPositionStatus="empty";
                         }
                         //计算可开的空头数量
                         double availableMargin = getAvailableMargin("BTC");
                         long openVolume = getMaxOpenVolume(availableMargin * MAX_OPEN_POSITION_PERCENT, "BTC_CQ");
                         //开空
                         if (openVolume > 0) {
-                            ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", 0,
-                                    openVolume, "sell", "open", 20, "opponent");
-                            long orderID = huobiContractAPI.placeOrder(contractOrderRequest);
-                            //等待交易完成
-                            while (!checkOrderFinishedOrNot(orderID)) {
-                                try {
-                                    Thread.sleep(500);
-                                } catch (Exception e) {
-                                }
-                            }
+                            ContractOrderInfo finishedOrder = finishOrder(openVolume, "sell", "open", "opponent");
                             actualPositionStatus = "sell";
-                            print("已开空");
+                            log.info("已开空;" + "开仓价为：" + finishedOrder.getPrice() + ";" + "开仓数量为：" + finishedOrder.getTrade_volume());
                         }
                     }
+
+                    if (targetPositionStatus.equals("empty")) {
+                        //查询多头或空头持仓数量
+                        long positionVolumeLong = queryPositionVolume("buy");
+                        long positionVolumeShort = queryPositionVolume("sell");
+
+                        //平掉多头仓位
+                        if (positionVolumeLong > 0) {
+                            ContractOrderInfo finishedOrder = finishOrder(positionVolumeLong, "sell", "close", "opponent");
+                            log.info("已平掉多头仓位;"+"平仓价为："+finishedOrder.getPrice()+";"+"平仓数量为："+finishedOrder.getTrade_volume());
+                            actualPositionStatus="empty";
+                        }
+                        //平掉空头仓位
+                        if (positionVolumeShort > 0) {
+                            ContractOrderInfo finishedOrder = finishOrder(positionVolumeShort, "buy", "close", "opponent");
+                            log.info("已平掉空头仓位;"+"平仓价为："+finishedOrder.getPrice()+";"+"平仓数量为："+finishedOrder.getTrade_volume());
+                            actualPositionStatus="empty";
+                        }
+                    }
+
                 } catch (IllegalStateException e) {
                 }
             }
         }, 0, HANG_ORDER_INTERVAL);// 取消订单，重新挂单的间隔为2s
-    }
-
-
-    private double calculateMA_Diff() {
-        List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M15, "10");
-        double MA5Total = 0;
-        double MA10Total = 0;
-        for (int i = klineList.size() - 1; i >= 0; i--) {
-            if (i >= 5) {
-                MA5Total = MA5Total + klineList.get(i).getClose();
-            }
-            MA10Total = MA10Total + klineList.get(i).getClose();
-        }
-        return (MA5Total / 5 - MA10Total / 10);
     }
 
 
@@ -233,6 +201,46 @@ public class PolicyByMA {
             MA5DerivativeList.add(MA5List.get(i) - MA5List.get(i + 1));
         }
         return MA5DerivativeList;
+    }
+
+    //查询持仓量
+    private long queryPositionVolume(String direction) {
+        long positionVolume = 0;
+        List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
+        for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
+            if (contractPositionInfo.getSymbol().equals("BTC") && contractPositionInfo.getContract_type().equals("quarter") && contractPositionInfo.getDirection().equals(direction)) {
+                positionVolume = contractPositionInfo.getVolume();
+            }
+        }
+        return positionVolume;
+    }
+
+
+    private ContractOrderInfo finishOrder(long volume, String direction, String offset, String orderPriceType) {
+        ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", 0,
+                volume, direction, offset, 20, orderPriceType);
+        if (orderPriceType.equals("opponent")) {
+            long orderID = huobiContractAPI.placeOrder(contractOrderRequest);
+            //等待交易完成
+            while (true) {
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                }
+                ContractOrderInfoRequest orderInfoRequest = new ContractOrderInfoRequest(orderID, "", "BTC");
+                ContractOrderInfo orderDetail = huobiContractAPI.getContractOrderInfo(orderInfoRequest).get(0);
+                if (orderDetail.getStatus() == (OrderStatus.FILLED.getCode())) {
+                    return orderDetail;
+                }
+                if (orderDetail.getStatus() == (OrderStatus.SUBMITTED.getCode())) {
+                    huobiContractAPI.cancelOrder(orderInfoRequest);
+                }
+                if (orderDetail.getStatus() == (OrderStatus.CANCELED.getCode())) {
+                    orderID = huobiContractAPI.placeOrder(contractOrderRequest);
+                }
+            }
+        }
+        return null;
     }
 
 

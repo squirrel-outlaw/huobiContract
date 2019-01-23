@@ -10,6 +10,7 @@ import com.huobi.domain.request.ContractOrderRequest;
 import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.service.*;
 import com.huobi.service.policyImpl.PolicyByMA;
+import lombok.extern.slf4j.Slf4j;
 
 
 import java.util.ArrayList;
@@ -22,15 +23,15 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
-         ActualOrderHandler actualOrderHandler=new ActualOrderHandler(initSystem.huobiContractAPI);
-         PolicyByMA policyByMA=new PolicyByMA(initSystem,actualOrderHandler);
-          policyByMA.autoTrade();
+        ActualOrderHandler actualOrderHandler = new ActualOrderHandler(initSystem.huobiContractAPI);
+        PolicyByMA policyByMA=new PolicyByMA(initSystem,actualOrderHandler);
+        policyByMA.autoTrade();
 
 
 
-       /* List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M5, "2000");
+      /*  List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M15, "100");
         List<Double> MA5List = new ArrayList<>();
-        for (int j = 2000; j >= 5; j--) {
+        for (int j = klineList.size(); j >= 5; j--) {
             double MA5Total = 0;
             for (int i = j - 1; i >= j - 5; i--) {
                 MA5Total = MA5Total + klineList.get(i).getClose();
@@ -94,13 +95,13 @@ public class Main {
         }*/
     }
 
-    public void commandHandle(int cmd) {
+   /* public void commandHandle(int cmd) {
         switch (cmd) {
             case 1:
 
                 break;
         }
-    }
+    }*/
 
 
 }
