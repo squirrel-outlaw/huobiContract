@@ -15,6 +15,7 @@ public enum Resolution {
     M15("15min"),
     M30("30min"),
     M60("60min"),
+    M240("4hour"),
     D1("1day"),
     MN1("1mon"),
     W1("1week"),

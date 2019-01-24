@@ -26,4 +26,5 @@ public class Kline {
     //用来存放自定义的MA和MA_Derivative
     private double MA;
     private double MA_Derivative;
+    private double closePriceDerivative;
 }
