@@ -10,6 +10,7 @@ import java.math.BigDecimal;
  * @Date 2018/1/14
  * @Time 11:35
  */
+
 @Getter
 @Setter
 public class Kline {

@@ -104,7 +104,7 @@ task copyJar(dependsOn: del) {
         ssh.run {
             session(remotes.deployServer) {
                 println 'start copying jar...'
-                put from: shadowJar.archivePath, into: '/usr/local/huobi/temp'
+                put from: shadowJar.archivePath, into: '/usr/local/huobi'
             }
         }
     }

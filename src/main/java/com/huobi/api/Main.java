@@ -11,6 +11,7 @@ import com.huobi.domain.response.CancelOrderResp;
 import com.huobi.service.*;
 import com.huobi.service.policyImpl.MA;
 import com.huobi.service.policyImpl.PolicyByMA;
+import com.huobi.service.policyImpl.PolicyWave;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -24,11 +25,11 @@ public class Main {
     public static void main(String[] args) {
 
         InitSystem initSystem = new InitSystem();
-        // ActualOrderHandler actualOrderHandler = new ActualOrderHandler(initSystem.huobiContractAPI);
-        // PolicyByMA policyByMA=new PolicyByMA(initSystem,actualOrderHandler);
-        // policyByMA.autoTrade();
-        List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M240, "2000");
-        MA.writeToExcel(klineList,5);
+        //ActualOrderHandler actualOrderHandler = new ActualOrderHandler(initSystem.huobiContractAPI);
+        PolicyWave policyByMA=new PolicyWave(initSystem);
+        policyByMA.autoTrade();
+      //  List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M240, "2000");
+       // MA.writeToExcel(klineList,5);
 
 
 
