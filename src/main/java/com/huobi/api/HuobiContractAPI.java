@@ -21,6 +21,7 @@ public interface HuobiContractAPI {
     Merged getMerged(String symbol);
 
     //获取最新成交记录
+    //参数symbol为"BTC_CW"，"BTC_NW"，"BTC_CQ"
     Trade getTrade(String symbol);
 
     //批量获取最近的交易记录
