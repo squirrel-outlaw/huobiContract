@@ -6,6 +6,10 @@ import com.huobi.domain.POJOs.ContractPositionInfo;
 import com.huobi.service.policyImpl.PolicyWave;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static com.huobi.constant.TradeConditionConsts.AUTO_TRADE_INTERVAL;
 
 /**
  * @Author: squirrel
@@ -14,15 +18,7 @@ import java.util.List;
 public class DisplaySystem {
     private HuobiContractAPI huobiContractAPI;
     private PolicyWave policyWave;
-
-
-    public String functionDisplay = "\n" +
-            "功能提示:\n" +
-            "1.查询账户总资产\n" +
-            "2.查询账户持仓保证金\n" +
-            "3.当前持仓收益率\n" +
-            "0:返回\n" +
-            "q:退出系统，终止程序\n";
+    public boolean isDisplayPolicyRunningStatus = false;
 
 
     public DisplaySystem(InitSystem initSystem, PolicyWave policyWave) {
@@ -30,11 +26,24 @@ public class DisplaySystem {
         this.policyWave = policyWave;
     }
 
+    public void displayFunction() {
+        System.out.println("\n" +
+                "功能提示:\n" +
+                "1.查询账户基本情况\n" +
+                "2.当前策略运行情况\n" +
+                "3.当前策略强行平仓情况\n" +
+                "4.当前策略多空转换情况\n" +
+                "5.当前策略开平仓挂单情况\n" +
+                "0:返回\n" +
+                "q:退出系统，终止程序\n");
+    }
 
     //显示账户基本情况
-    public String displayAccountInformation(String symbol, String queryItem) {
+    public void displayAccountInformation(String symbol) {
         double margin_balance = 0;
         double margin_position = 0;
+        double profit_rate_buy = 0;
+        double profit_rate_sell = 0;
         List<ContractAccountInfo> contractAccountInfoList = huobiContractAPI.getContractAccountInfos();
         for (ContractAccountInfo contractAccountInfo : contractAccountInfoList) {
             if (contractAccountInfo.getSymbol().equals(symbol)) {
@@ -42,26 +51,69 @@ public class DisplaySystem {
                 margin_position = contractAccountInfo.getMargin_position();
             }
         }
-        if (queryItem.equals("margin_balance")) {
-            return "账户总资产为: " + margin_balance + " " + symbol;
-        }
-        if (queryItem.equals("margin_position")) {
-            return "持仓保证金为: " + margin_position + " " + symbol;
-        }
-        return "查询错误";
-    }
-
-    //查询当前持仓收益率
-    public String queryPositionProfitRate(String direction) {
-        double profit_rate = 0;
         List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
         for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
-            if (contractPositionInfo.getSymbol().equals("BTC") && contractPositionInfo.getContract_type().equals("quarter") && contractPositionInfo.getDirection().equals(direction)) {
-                profit_rate = contractPositionInfo.getProfit_rate();
+            if (contractPositionInfo.getSymbol().equals(symbol) && contractPositionInfo.getContract_type().equals
+                    ("quarter") && contractPositionInfo.getDirection().equals("buy")) {
+                profit_rate_buy = contractPositionInfo.getProfit_rate();
+            }
+            if (contractPositionInfo.getSymbol().equals(symbol) && contractPositionInfo.getContract_type().equals
+                    ("quarter") && contractPositionInfo.getDirection().equals("sell")) {
+                profit_rate_sell = contractPositionInfo.getProfit_rate();
             }
         }
-        return "当前持仓 " + direction + " 收益率为: " + profit_rate;
+        System.out.println("\n" +
+                "账户总资产为: " + margin_balance + " " + symbol + "\n" +
+                "持仓保证金为: " + margin_position + " " + symbol + "\n" +
+                "当前买多，收益率为: " + profit_rate_buy + "\n" +
+                "当前卖空，收益率为: " + profit_rate_sell + "\n");
     }
 
+    //显示策略运行时，基本情况
+    public void displayPolicyRunningStatus() {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            public void run() {
+                if (!isDisplayPolicyRunningStatus) {
+                    timer.cancel();
+                }
+                System.out.println(policyWave.currentPolicyRunningStatus + "\n");
+            }
+        }, 0, AUTO_TRADE_INTERVAL);// 自动交易间隔时间
+    }
+
+
+    //显示策略运行时，强行平仓的相关信息
+    public void displayForceClosePositionInfo() {
+        if (!policyWave.forceClosePositionStatusList.isEmpty()) {
+            for (String string : policyWave.forceClosePositionStatusList) {
+                System.out.println(string + "\n");
+            }
+            return;
+        }
+        System.out.println("没有出现强行平仓" + "\n");
+    }
+
+    //显示策略运行时，多空转换的状态信息
+    public void displayLongShortSwitchStatusInfo() {
+        if (!policyWave.longShortSwitchStatusList.isEmpty()) {
+            for (String string : policyWave.longShortSwitchStatusList) {
+                System.out.println(string + "\n");
+            }
+            return;
+        }
+        System.out.println("没有出现多空转换" + "\n");
+    }
+
+    //显示策略运行时，开平仓挂单的状态信息
+    public void displayOpenClosePositionHangStatusInfo() {
+        if (!policyWave.openClosePositionHangStatusList.isEmpty()) {
+            for (String string : policyWave.openClosePositionHangStatusList) {
+                System.out.println(string + "\n");
+            }
+            return;
+        }
+        System.out.println("没有出现开平仓挂单" + "\n");
+    }
 
 }

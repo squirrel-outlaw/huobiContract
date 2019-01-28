@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class Kline {
-    private long id;
+    private long id;   //以秒为单位的时间戳
     private String realtime;
     private int count;
     private double open;

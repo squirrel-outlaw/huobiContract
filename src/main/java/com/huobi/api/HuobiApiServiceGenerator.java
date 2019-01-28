@@ -63,9 +63,12 @@ public class HuobiApiServiceGenerator {
                 parseError(response);
             }
         } catch (IOException e) {
-           log.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } catch (HuobiApiException e) {
-            log.error("errMsg:" + e.getMessage() + ",errCode:" + e.getErrCode());
+            //如果是没有订单可以取消，则不报错
+            if (!e.getMessage().equals("errCode:1051, errMsg:No orders to cancel..")) {
+                log.error("errMsg:" + e.getMessage() + ",errCode:" + e.getErrCode());
+            }
         }
         //此异常必须被捕获，否则程序终止运行
         throw new IllegalStateException("invalid response from server.");

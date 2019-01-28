@@ -34,6 +34,12 @@ public class PolicyWave {
     private String markKlineType;    //大阳线或大阴线，绿色为大阳线，红色为大阴线
     private double openPositionPrice;
     private boolean isOpenPositionPriceChange = false;
+
+    private double marginSafePercent = MARGIN_SAFE_RATE_INIT;  //开仓时的安全比例
+    private long marginSafeRateReduceToMaxTimeStamp = 0;
+    private long marginSafeRateReduceToMiddleTimeStamp = 0;
+    private long marginSafeRateReduceToZeroTimeStamp = 0;
+
     public boolean isThisPolicyAvailable;
     //以下为显示系统运行状态的信息
     public String currentPolicyRunningStatus;   //系统运行时时的状态信息
@@ -85,7 +91,6 @@ public class PolicyWave {
         timer.schedule(new TimerTask() {
             public void run() {
                 try {
-                    print(df.format(new Date()) + " " + "系统正常运行中");
                     currentPolicyRunningStatus = df.format(new Date()) + " " + "系统正常运行中";
                     //每次循环交易前先初始化isFindMarkKline
                     isFindMarkKline = false;
@@ -115,9 +120,9 @@ public class PolicyWave {
                         //如果找到了大K线是出现在上一个小时，全部平仓，直接返回，进行下一次交易循环
                         if (isFindMarkKline && (i == klineList.size() - 2)) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "大K线为上一个小时出现的，全部平仓，直接返回，进行下一次交易循环";
-                            forceClosePositionStatusList.add(currentPolicyRunningStatus);
-                            closeAllPosition("sell");
-                            closeAllPosition("buy");
+                            recordInfoToList(currentPolicyRunningStatus, forceClosePositionStatusList, klineList.get(i).getId());
+                            closePositionRightNow("buy", 1);
+                            closePositionRightNow("sell", 1);
                             waitSomeSeconds(LATELY_BIG_KLINE_AFTER_FORCE_CLOSE_POSITION_WAIT_TIME);
                             //直接返回，进行下一次交易循环
                             return;
@@ -134,7 +139,7 @@ public class PolicyWave {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "大阳线做空时，最新价下探，调整做空的开仓价";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                         //如果最新的K线突破的大阳线的高点，转为做多
                                     } else if ((nextClosePrice - markKline.getHigh()) / markKline.getHigh() > THROUGH_GREEN_BIG_KLINE_RATE) {
@@ -142,8 +147,8 @@ public class PolicyWave {
                                         openPositionPrice = nextClosePrice;
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
-                                            currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线突破的大阳线的高点，转为做多";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线突破大阳线的高点，转为做多";
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -159,7 +164,7 @@ public class PolicyWave {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线又回到大阳线的收盘价之下，转为做空";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                         //大阳线做多时，最新价上扬，时时调整做多开仓价
                                     } else if (nextClosePrice * (1 - OPEN_POSITION_HANG_PRICE_ADJUST_RATE) > openPositionPrice && nextClosePrice * (1 - OPEN_POSITION_HANG_PRICE_ADJUST_RATE) < markKline.getClose() * 1.015) {
@@ -167,7 +172,7 @@ public class PolicyWave {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "阳线做多时，最新价上扬，时时调整做多开仓价";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -181,8 +186,8 @@ public class PolicyWave {
                                         openPositionPrice = nextClosePrice * (1 - OPEN_POSITION_HANG_PRICE_ADJUST_RATE);
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
-                                            currentPolicyRunningStatus = df.format(new Date()) + " " + "阴线做多时，最新价上扬，时时调整做多开仓价";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            currentPolicyRunningStatus = df.format(new Date()) + " " + "大阴线做多时，最新价上扬，时时调整做多开仓价";
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                         //如果最新的K线突破的大阴线的低点，转为做空
                                     } else if ((nextClosePrice - markKline.getLow()) / markKline.getLow() < THROUGH_RED_BIG_KLINE_RATE) {
@@ -190,8 +195,8 @@ public class PolicyWave {
                                         openPositionPrice = nextClosePrice;
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
-                                            currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线突破的大阴线的低点，转为做空";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线突破大阴线的低点，转为做空";
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -207,7 +212,7 @@ public class PolicyWave {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线又回到大阴线的收盘价之上，转为做多";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                         //大阴线做空时，最新价下探，时时调整做空开仓价
                                     } else if (nextClosePrice * (1 + OPEN_POSITION_HANG_PRICE_ADJUST_RATE) < openPositionPrice && nextClosePrice * (1 + OPEN_POSITION_HANG_PRICE_ADJUST_RATE) > markKline.getClose() * 0.985) {
@@ -215,7 +220,7 @@ public class PolicyWave {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "阴线做空时，最新价下探，时时调整做空开仓价";
-                                            longShortSwitchStatusList.add(currentPolicyRunningStatus);
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -233,14 +238,14 @@ public class PolicyWave {
                     //如果在整个klineList里没有找到大K线，直接退出交易循环
                     if (!isFindMarkKline) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "没有找到大K线";
-                        closeAllPosition("sell");
-                        closeAllPosition("buy");
+                        closePositionRightNow("buy", 1);
+                        closePositionRightNow("sell", 1);
                         return;
                     }
 //*********************************************************************************************************************
                     //如果可用的保证金大于百分之10,进行开仓挂单
-                    if (getAvailableMargin("BTC", true, MARGIN_SAFE_PERCENT) > 0.1) {
-                        double availableMargin = getAvailableMargin("BTC", false, MARGIN_SAFE_PERCENT);
+                    if (getAvailableMargin("BTC", true, marginSafePercent) > 0.1) {
+                        double availableMargin = getAvailableMargin("BTC", false, marginSafePercent);
                         long maxOpenVolume = getMaxOpenVolume(availableMargin, "BTC_CQ");
                         String direction;
                         double hangPrice;
@@ -273,23 +278,50 @@ public class PolicyWave {
 
                     //如果实际持仓跟目标持仓相反，对已有持仓进行立即平仓挂单
                     if (targetPositionStatus.equals("long")) {
-                        closeAllPosition("sell");
+                        closePositionRightNow("sell", 1);
                     }
                     if (targetPositionStatus.equals("short")) {
-                        closeAllPosition("buy");
+                        closePositionRightNow("buy", 1);
                     }
 
-                    //系统损失超过40%，强行平仓
+                    //系统损失超过一定幅度，强行平仓
                     double profitRateLong = (double) queryPosition("buy", "profit_rate");
                     double profitRateShort = (double) queryPosition("sell", "profit_rate");
-                    if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_rate && profitRateShort < FORCE_CLOSE_POSITION_LOSS_rate) {
-                        currentPolicyRunningStatus = df.format(new Date()) + " " + "系统损失超过40%，强行平仓";
-                        forceClosePositionStatusList.add(currentPolicyRunningStatus);
-                        closeAllPosition("sell");
-                        closeAllPosition("buy");
-                        currentPolicyRunningStatus = df.format(new Date()) + " " + "系统损失超过40%，等待10个小时";
-                        forceClosePositionStatusList.add(currentPolicyRunningStatus);
-                        waitSomeSeconds(AFTER_FORCE_CLOSE_POSITION_WAIT_TIME);
+                    //损失超过30%，平3成仓位，保证金安全比例降到0.35
+                    if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_RATE_MIN || profitRateShort < FORCE_CLOSE_POSITION_LOSS_RATE_MIN) {
+                        currentPolicyRunningStatus = df.format(new Date()) + " " + "系统损失超过30%，强行平仓3成仓位";
+                        closePositionAccordingToLoss(FORCE_CLOSE_POSITION_VOLUME_PERCENT_MIN, MARGIN_SAFE_RATE_LOSS_MIN);
+                        marginSafeRateReduceToMaxTimeStamp = System.currentTimeMillis();
+                   }
+                    //损失超过40%，平5成仓位，保证金安全比例降到0.25
+                    if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_RATE_MIDDLE || profitRateShort < FORCE_CLOSE_POSITION_LOSS_RATE_MIDDLE) {
+                        currentPolicyRunningStatus = df.format(new Date()) + " " + "系统损失超过40%，强行平仓5成仓位";
+                        closePositionAccordingToLoss(FORCE_CLOSE_POSITION_VOLUME_PERCENT_MIDDLE, MARGIN_SAFE_RATE_LOSS_MIDDLE);
+                        marginSafeRateReduceToMiddleTimeStamp = System.currentTimeMillis();
+                    }
+                    //损失超过50%，清仓，保证金安全比例降到0
+                    if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_RATE_MAX || profitRateShort < FORCE_CLOSE_POSITION_LOSS_RATE_MAX) {
+                        currentPolicyRunningStatus = df.format(new Date()) + " " + "系统损失超过50%，清仓，保证金安全比例降到0";
+                        closePositionAccordingToLoss(FORCE_CLOSE_POSITION_VOLUME_PERCENT_MAX, MARGIN_SAFE_RATE_LOSS_MAX);
+                        marginSafeRateReduceToZeroTimeStamp = System.currentTimeMillis();
+                    }
+                    //根据系统运行的时间还原保证金安全比例
+                    if (marginSafeRateReduceToZeroTimeStamp != 0 && System.currentTimeMillis()
+                            - marginSafeRateReduceToZeroTimeStamp > MARGIN_SAFE_RATE_SWITCH_TIME) {
+                        marginSafeRateReduceToZeroTimeStamp=0;
+                        marginSafePercent=MARGIN_SAFE_RATE_LOSS_MIDDLE;
+                        marginSafeRateReduceToMiddleTimeStamp=System.currentTimeMillis();
+                    }
+                    if (marginSafeRateReduceToMiddleTimeStamp != 0 && System.currentTimeMillis()
+                            - marginSafeRateReduceToMiddleTimeStamp > MARGIN_SAFE_RATE_SWITCH_TIME) {
+                        marginSafeRateReduceToMiddleTimeStamp=0;
+                        marginSafePercent=MARGIN_SAFE_RATE_LOSS_MIN;
+                        marginSafeRateReduceToMaxTimeStamp=System.currentTimeMillis();
+                    }
+                    if (marginSafeRateReduceToMaxTimeStamp != 0 && System.currentTimeMillis()
+                            - marginSafeRateReduceToMaxTimeStamp > MARGIN_SAFE_RATE_SWITCH_TIME) {
+                        marginSafeRateReduceToMaxTimeStamp=0;
+                        marginSafePercent=MARGIN_SAFE_RATE_INIT;
                     }
 
                     //终止此策略的运行
@@ -400,34 +432,53 @@ public class PolicyWave {
         }
     }
 
-    //立即平仓,返回订单ID
-    private void closePositionRightNow(String direction, double price) {
-        long positionVolume = (long) queryPosition(direction, "volume");
+    //根据损失的不同，进行平仓处理
+    private void closePositionAccordingToLoss(double closePositionVolumePercent, double marginSafePercentAdjust) {
+        forceClosePositionStatusList.add(currentPolicyRunningStatus);
+        closePositionRightNow("buy", closePositionVolumePercent);
+        closePositionRightNow("sell", closePositionVolumePercent);
+        marginSafePercent = marginSafePercentAdjust;
+        marginSafeRateReduceToMaxTimeStamp = 0;
+        marginSafeRateReduceToMiddleTimeStamp = 0;
+        marginSafeRateReduceToZeroTimeStamp = 0;
+    }
+
+    //立即平仓
+    private void closePositionRightNow(String direction, double closePositionPercent) {
+        double newestPrice;
+        long hangVolume;
+        long availableVolume;
         String closeDirection;
         if (direction.equals("sell")) {
             closeDirection = "buy";
         } else {
             closeDirection = "sell";
         }
-        if (positionVolume > 0) {
+        long positionVolume = (long) queryPosition(direction, "volume");
+        //需要保留下来的仓位
+        long needKeepPositionVolume = (long) ((long) queryPosition(direction, "volume") * (1 - closePositionPercent));
+        //需要平掉的仓位
+        long needClosePositionVolume = positionVolume - needKeepPositionVolume;
+        while (needClosePositionVolume > 0) {
             //撤销所有委托订单
             finishCancelAllOrders();
-            long availableVolume = (long) queryPosition(direction, "available");
-            if (availableVolume > 0) {
-                ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null,
-                        "", price, availableVolume, closeDirection, "close", 20, "limit");
-                currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行立即平仓，价格：" + price + ",数量：" + positionVolume + ",方向：" + closeDirection;
-                forceClosePositionStatusList.add(currentPolicyRunningStatus);
-                huobiContractAPI.placeOrder(contractOrderRequest);
+            //重新获取总的持仓量
+            positionVolume = (long) queryPosition(direction, "volume");
+            needClosePositionVolume = positionVolume - needKeepPositionVolume;
+            availableVolume = (long) queryPosition(direction, "available");
+            if (availableVolume == positionVolume && needClosePositionVolume
+                    > 0) {
+                hangVolume = needClosePositionVolume;
+            } else {
+                continue;
             }
-        }
-    }
-
-    //对所有持仓进行平仓
-    private void closeAllPosition(String direction) {
-        while ((long) queryPosition(direction, "volume") > 0) {
-            double newestPrice = huobiContractAPI.getTrade("BTC_CQ").getPrice();
-            closePositionRightNow(direction, newestPrice);
+            newestPrice = huobiContractAPI.getTrade("BTC_CQ").getPrice();
+            ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null,
+                    "", newestPrice, hangVolume, closeDirection, "close", 20, "limit");
+            currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行立即平仓，价格：" + newestPrice + ",数量：" + hangVolume + ",方向：" + closeDirection;
+            forceClosePositionStatusList.add(currentPolicyRunningStatus);
+            huobiContractAPI.placeOrder(contractOrderRequest);
+            waitSomeSeconds(3);
         }
     }
 
@@ -446,6 +497,13 @@ public class PolicyWave {
         try {
             Thread.sleep(seconds * 1000);
         } catch (Exception e) {
+        }
+    }
+
+    //记录一些关键转换到文字列表中，只记录发生时30秒内的
+    private void recordInfoToList(String status, List<String> infoList, long klineID) {
+        if (System.currentTimeMillis() - klineID * 1000 < RECORD_STATUS_SWITCH_TIME * 1000) {
+            infoList.add(status);
         }
     }
 
