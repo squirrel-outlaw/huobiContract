@@ -28,7 +28,7 @@ import static com.huobi.utils.PrintUtil.print;
 public class PolicyWave {
     private SimpleDateFormat df;   //设置日期格式
     private HuobiContractAPI huobiContractAPI;
-    private String targetPositionStatus;  //目标持仓状态
+    //private String targetPositionStatus;  //目标持仓状态
     private Kline markKline;              //大阳线或大阴线
     private boolean isFindMarkKline = false;
     private String markKlineType;    //大阳线或大阴线，绿色为大阳线，红色为大阴线
@@ -46,6 +46,13 @@ public class PolicyWave {
     public List<String> forceClosePositionStatusList = new ArrayList<>();   //强行平仓时的信息列表
     public List<String> openClosePositionHangStatusList = new ArrayList<>();  //开平仓挂单时的信息列表
     public List<String> longShortSwitchStatusList = new ArrayList<>();   //系统空多转换时的信息列表
+
+
+    private String currentPositionStatus;
+    private String targetPositionStatus;
+    private double markClosePrice;
+    private double markHighPrice;
+
 
     public PolicyWave(InitSystem initSystem, boolean isThisPolicyAvailable) {
         this.huobiContractAPI = initSystem.huobiContractAPI;
@@ -91,7 +98,72 @@ public class PolicyWave {
         timer.schedule(new TimerTask() {
             public void run() {
                 try {
-                    currentPolicyRunningStatus = df.format(new Date()) + " " + "系统正常运行中";
+
+                    List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M60, String.valueOf(GET_1HOUR_KLINE_COUNTS));
+                    double lowestClosePrice = klineList.get(0).getClose();
+                    int lowestClosePriceKlineIndex = 0;
+                    double highestClosePrice = klineList.get(0).getClose();
+                    int highestClosePriceKlineIndex = 0;
+                    double klineRateLength = 0;
+
+                    for (int i = 1; i >= klineList.size() - 2; i++) {
+                        if (klineList.get(i).getClose() < lowestClosePrice) {
+                            lowestClosePrice = klineList.get(i).getClose();
+                            lowestClosePriceKlineIndex = i;
+                        }
+                        if (klineList.get(i).getClose() > highestClosePrice) {
+                            highestClosePrice = klineList.get(i).getClose();
+                            highestClosePriceKlineIndex = i;
+                        }
+                        if (lowestClosePriceKlineIndex >= highestClosePriceKlineIndex) {
+                            klineRateLength = (lowestClosePriceKlineIndex - highestClosePriceKlineIndex) / highestClosePriceKlineIndex;
+                        } else {
+                            klineRateLength = (highestClosePriceKlineIndex - lowestClosePriceKlineIndex) / lowestClosePriceKlineIndex;
+                        }
+
+                        if (klineRateLength > 1.5) {
+                            currentPositionStatus = "long";
+                            //targetPositionStatus="short";
+                            markHighPrice = klineList.get(highestClosePriceKlineIndex).getHigh();
+                            markClosePrice = klineList.get(highestClosePriceKlineIndex).getClose();
+
+                            for (int j = highestClosePriceKlineIndex + 1; j >= klineList.size() - 2; i++) {
+                                if (klineList.get(j).getClose() > markClosePrice && currentPositionStatus.equals("long")) {
+                                    markClosePrice = klineList.get(j).getClose();
+                                }
+                                if (klineList.get(j).getClose() < markClosePrice && currentPositionStatus.equals("long")) {
+                                    if (j + 1 <= klineList.size() - 2 && klineList.get(j + 1).getClose() < markClosePrice) {
+                                        currentPositionStatus = "short";
+                                    }
+                                }
+
+
+                            }
+
+
+                        }
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*    currentPolicyRunningStatus = df.format(new Date()) + " " + "系统正常运行中";
                     //每次循环交易前先初始化isFindMarkKline
                     isFindMarkKline = false;
                     List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M60, String.valueOf(GET_1HOUR_KLINE_COUNTS));
@@ -329,6 +401,7 @@ public class PolicyWave {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "策略终止运行";
                         timer.cancel();
                     }
+               */
                 } catch (IllegalStateException e) {
                 }
             }
