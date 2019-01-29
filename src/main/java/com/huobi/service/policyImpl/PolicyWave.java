@@ -11,6 +11,7 @@ import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
 import com.huobi.service.ActualOrderHandler;
 import com.huobi.service.InitSystem;
+import com.huobi.service.Policy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
@@ -25,9 +26,7 @@ import static com.huobi.utils.PrintUtil.print;
  * @Date 19-1-24 下午1:54
  */
 @Slf4j
-public class PolicyWave {
-    private SimpleDateFormat df;   //设置日期格式
-    private HuobiContractAPI huobiContractAPI;
+public class PolicyWave extends Policy {
     //private String targetPositionStatus;  //目标持仓状态
     private Kline markKline;              //大阳线或大阴线
     private boolean isFindMarkKline = false;
@@ -40,13 +39,6 @@ public class PolicyWave {
     private long marginSafeRateReduceToMiddleTimeStamp = 0;
     private long marginSafeRateReduceToZeroTimeStamp = 0;
 
-    public boolean isThisPolicyAvailable;
-    //以下为显示系统运行状态的信息
-    public String currentPolicyRunningStatus;   //系统运行时时的状态信息
-    public List<String> forceClosePositionStatusList = new ArrayList<>();   //强行平仓时的信息列表
-    public List<String> openClosePositionHangStatusList = new ArrayList<>();  //开平仓挂单时的信息列表
-    public List<String> longShortSwitchStatusList = new ArrayList<>();   //系统空多转换时的信息列表
-
 
     private String currentPositionStatus;
     private String targetPositionStatus;
@@ -55,11 +47,10 @@ public class PolicyWave {
 
 
     public PolicyWave(InitSystem initSystem, boolean isThisPolicyAvailable) {
-        this.huobiContractAPI = initSystem.huobiContractAPI;
-        this.isThisPolicyAvailable = isThisPolicyAvailable;
-        df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        super(initSystem,isThisPolicyAvailable);
     }
 
+    @Override
     public void autoTrade() {
         /*List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M60, "200");
         Kline kline1 = new Kline();
@@ -93,77 +84,11 @@ public class PolicyWave {
 
 */
         log.info("系统开始运行");
-
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
                 try {
-
-                    List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M60, String.valueOf(GET_1HOUR_KLINE_COUNTS));
-                    double lowestClosePrice = klineList.get(0).getClose();
-                    int lowestClosePriceKlineIndex = 0;
-                    double highestClosePrice = klineList.get(0).getClose();
-                    int highestClosePriceKlineIndex = 0;
-                    double klineRateLength = 0;
-
-                    for (int i = 1; i >= klineList.size() - 2; i++) {
-                        if (klineList.get(i).getClose() < lowestClosePrice) {
-                            lowestClosePrice = klineList.get(i).getClose();
-                            lowestClosePriceKlineIndex = i;
-                        }
-                        if (klineList.get(i).getClose() > highestClosePrice) {
-                            highestClosePrice = klineList.get(i).getClose();
-                            highestClosePriceKlineIndex = i;
-                        }
-                        if (lowestClosePriceKlineIndex >= highestClosePriceKlineIndex) {
-                            klineRateLength = (lowestClosePriceKlineIndex - highestClosePriceKlineIndex) / highestClosePriceKlineIndex;
-                        } else {
-                            klineRateLength = (highestClosePriceKlineIndex - lowestClosePriceKlineIndex) / lowestClosePriceKlineIndex;
-                        }
-
-                        if (klineRateLength > 1.5) {
-                            currentPositionStatus = "long";
-                            //targetPositionStatus="short";
-                            markHighPrice = klineList.get(highestClosePriceKlineIndex).getHigh();
-                            markClosePrice = klineList.get(highestClosePriceKlineIndex).getClose();
-
-                            for (int j = highestClosePriceKlineIndex + 1; j >= klineList.size() - 2; i++) {
-                                if (klineList.get(j).getClose() > markClosePrice && currentPositionStatus.equals("long")) {
-                                    markClosePrice = klineList.get(j).getClose();
-                                }
-                                if (klineList.get(j).getClose() < markClosePrice && currentPositionStatus.equals("long")) {
-                                    if (j + 1 <= klineList.size() - 2 && klineList.get(j + 1).getClose() < markClosePrice) {
-                                        currentPositionStatus = "short";
-                                    }
-                                }
-
-
-                            }
-
-
-                        }
-                    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                /*    currentPolicyRunningStatus = df.format(new Date()) + " " + "系统正常运行中";
+                    currentPolicyRunningStatus = df.format(new Date()) + " " + "系统正常运行中";
                     //每次循环交易前先初始化isFindMarkKline
                     isFindMarkKline = false;
                     List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M60, String.valueOf(GET_1HOUR_KLINE_COUNTS));
@@ -401,7 +326,6 @@ public class PolicyWave {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "策略终止运行";
                         timer.cancel();
                     }
-               */
                 } catch (IllegalStateException e) {
                 }
             }
@@ -410,58 +334,6 @@ public class PolicyWave {
 
     //*********************************************************************************************************************
     //*********************************************************************************************************************
-    //查询可用的保证金
-    private double getAvailableMargin(String symbol, boolean isPercent, double safePercent) {
-        List<ContractAccountInfo> contractAccountInfoList = huobiContractAPI.getContractAccountInfos();
-        for (ContractAccountInfo contractAccountInfo : contractAccountInfoList) {
-            if (contractAccountInfo.getSymbol().equals(symbol)) {
-                if (isPercent) {
-                    return (contractAccountInfo.getMargin_available() - contractAccountInfo.getMargin_balance()
-                            * safePercent) / (contractAccountInfo.getMargin_balance()
-                            * safePercent);
-                }
-                return contractAccountInfo.getMargin_available() - contractAccountInfo.getMargin_balance()
-                        * safePercent;
-            }
-        }
-        return 0;
-    }
-
-    //计算在一定保证金的情况下，最大可开仓量
-    private long getMaxOpenVolume(double margin, String contractSymbol) {
-        double newestPrice = huobiContractAPI.getTrade(contractSymbol).getPrice();
-        return (long) (margin * 20 * newestPrice / 100);
-    }
-
-    //查询持仓情况
-    private Object queryPosition(String direction, String queryItem) {
-        long positionVolume = 0;
-        long available = 0;
-        double cost_hold = 0;
-        double profit_rate = 0;
-        List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
-        for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
-            if (contractPositionInfo.getSymbol().equals("BTC") && contractPositionInfo.getContract_type().equals("quarter") && contractPositionInfo.getDirection().equals(direction)) {
-                positionVolume = contractPositionInfo.getVolume();
-                available = contractPositionInfo.getAvailable();
-                cost_hold = contractPositionInfo.getCost_hold();
-                profit_rate = contractPositionInfo.getProfit_rate();
-            }
-        }
-        if (queryItem.equals("volume")) {
-            return positionVolume;
-        }
-        if (queryItem.equals("available")) {
-            return available;
-        }
-        if (queryItem.equals("cost_hold")) {
-            return cost_hold;
-        }
-        if (queryItem.equals("profit_rate")) {
-            return profit_rate;
-        }
-        return "error";
-    }
 
     //对已有持仓进行平仓挂单
     private void closePositionHangOrder(String direction) {
@@ -552,24 +424,6 @@ public class PolicyWave {
             forceClosePositionStatusList.add(currentPolicyRunningStatus);
             huobiContractAPI.placeOrder(contractOrderRequest);
             waitSomeSeconds(3);
-        }
-    }
-
-    //撤销所有订单
-    private void finishCancelAllOrders() {
-        try {
-            huobiContractAPI.cancelAllOrders(new ContractOrderInfoRequest(0, "", "BTC"));
-            //等待1秒钟，以便撤单完成
-            waitSomeSeconds(1);
-        } catch (IllegalStateException E) {
-        }
-    }
-
-    //让程序暂停运行几秒钟
-    private void waitSomeSeconds(long seconds) {
-        try {
-            Thread.sleep(seconds * 1000);
-        } catch (Exception e) {
         }
     }
 

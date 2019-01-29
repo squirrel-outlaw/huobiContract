@@ -3,6 +3,7 @@ package com.huobi.service;
 import com.huobi.api.HuobiContractAPI;
 import com.huobi.domain.POJOs.ContractAccountInfo;
 import com.huobi.domain.POJOs.ContractPositionInfo;
+import com.huobi.service.policyImpl.PolicyByLead;
 import com.huobi.service.policyImpl.PolicyWave;
 
 import java.util.List;
@@ -17,13 +18,13 @@ import static com.huobi.constant.TradeConditionConsts.AUTO_TRADE_INTERVAL;
  */
 public class DisplaySystem {
     private HuobiContractAPI huobiContractAPI;
-    private PolicyWave policyWave;
+    private Policy policy;
     public boolean isDisplayPolicyRunningStatus = false;
 
 
-    public DisplaySystem(InitSystem initSystem, PolicyWave policyWave) {
+    public DisplaySystem(InitSystem initSystem, Policy policy) {
         this.huobiContractAPI = initSystem.huobiContractAPI;
-        this.policyWave = policyWave;
+        this.policy = policy;
     }
 
     public void displayFunction() {
@@ -32,8 +33,7 @@ public class DisplaySystem {
                 "1.查询账户基本情况\n" +
                 "2.当前策略运行情况\n" +
                 "3.当前策略强行平仓情况\n" +
-                "4.当前策略多空转换情况\n" +
-                "5.当前策略开平仓挂单情况\n" +
+                "4.当前策略开平仓挂单情况\n" +
                 "0:返回\n" +
                 "q:退出系统，终止程序\n");
     }
@@ -71,13 +71,14 @@ public class DisplaySystem {
 
     //显示策略运行时，基本情况
     public void displayPolicyRunningStatus() {
+        System.out.println(policy.policyStartInfo + "\n");
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
                 if (!isDisplayPolicyRunningStatus) {
                     timer.cancel();
                 }
-                System.out.println(policyWave.currentPolicyRunningStatus + "\n");
+                System.out.println(policy.currentPolicyRunningStatus + "\n");
             }
         }, 0, AUTO_TRADE_INTERVAL);// 自动交易间隔时间
     }
@@ -85,8 +86,8 @@ public class DisplaySystem {
 
     //显示策略运行时，强行平仓的相关信息
     public void displayForceClosePositionInfo() {
-        if (!policyWave.forceClosePositionStatusList.isEmpty()) {
-            for (String string : policyWave.forceClosePositionStatusList) {
+        if (!policy.forceClosePositionStatusList.isEmpty()) {
+            for (String string : policy.forceClosePositionStatusList) {
                 System.out.println(string + "\n");
             }
             return;
@@ -96,8 +97,8 @@ public class DisplaySystem {
 
     //显示策略运行时，多空转换的状态信息
     public void displayLongShortSwitchStatusInfo() {
-        if (!policyWave.longShortSwitchStatusList.isEmpty()) {
-            for (String string : policyWave.longShortSwitchStatusList) {
+        if (!policy.longShortSwitchStatusList.isEmpty()) {
+            for (String string : policy.longShortSwitchStatusList) {
                 System.out.println(string + "\n");
             }
             return;
@@ -107,8 +108,8 @@ public class DisplaySystem {
 
     //显示策略运行时，开平仓挂单的状态信息
     public void displayOpenClosePositionHangStatusInfo() {
-        if (!policyWave.openClosePositionHangStatusList.isEmpty()) {
-            for (String string : policyWave.openClosePositionHangStatusList) {
+        if (!policy.openClosePositionHangStatusList.isEmpty()) {
+            for (String string : policy.openClosePositionHangStatusList) {
                 System.out.println(string + "\n");
             }
             return;

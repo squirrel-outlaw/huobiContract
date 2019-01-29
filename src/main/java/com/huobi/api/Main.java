@@ -4,6 +4,7 @@ package com.huobi.api;
 import com.huobi.domain.POJOs.Kline;
 import com.huobi.domain.enums.Resolution;
 import com.huobi.service.*;
+import com.huobi.service.policyImpl.PolicyByLead;
 import com.huobi.service.policyImpl.PolicyWave;
 
 
@@ -17,15 +18,10 @@ import static com.huobi.utils.PrintUtil.print;
 public class Main {
     public static void main(String[] args) {
         InitSystem initSystem = new InitSystem();
-       // PolicyWave policyByMA = new PolicyWave(initSystem, true);
-       // policyByMA.autoTrade();
-        List<Kline> klineList = initSystem.huobiContractAPI.getKlines("BTC_CQ", Resolution.M60, String.valueOf
-                (GET_1HOUR_KLINE_COUNTS));
+        Policy policyByLead = new PolicyByLead(initSystem, true);
+        policyByLead.autoTrade();
 
-
-        print(System.currentTimeMillis());
-        print(klineList.get(klineList.size()-1).getId());
-        /* DisplaySystem displaySystem = new DisplaySystem(initSystem, policyByMA);
+        DisplaySystem displaySystem = new DisplaySystem(initSystem, policyByLead);
         displaySystem.displayFunction();
         Scanner sc = new Scanner(System.in);
         while (true) {
@@ -49,10 +45,6 @@ public class Main {
                     break;
                 case "4":
                     displaySystem.isDisplayPolicyRunningStatus = false;
-                    displaySystem.displayLongShortSwitchStatusInfo();
-                    break;
-                case "5":
-                    displaySystem.isDisplayPolicyRunningStatus = false;
                     displaySystem.displayOpenClosePositionHangStatusInfo();
                     break;
                 case "q":
@@ -64,7 +56,7 @@ public class Main {
                     System.out.println("错误指令");
                     break;
             }
-        }*/
+        }
     }
 
 

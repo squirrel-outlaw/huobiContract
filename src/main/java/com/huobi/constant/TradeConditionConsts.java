@@ -73,4 +73,19 @@ public interface TradeConditionConsts {
     int AUTO_TRADE_INTERVAL = 10 * 1000;   //自动交易的间隔时间，单位ms
     int RECORD_STATUS_SWITCH_TIME = 30;   //发生在此间隔内的多空状态转变，把它记录下来，单位秒
 
+    //*********************************************************************************************************************
+    //*********************************************************************************************************************
+    //PolicyByLead用到的常数
+    double OPEN_POSITION_RATE_SMALL = 0.6 * 0.01;
+    double OPEN_POSITION_RATE_MIDDLE = 0.85 * 0.01;
+    double OPEN_POSITION_RATE_BIG = 1.1 * 0.01;
+
+    double TAKE_PROFITE_RATE_SMALL = 0.4 * 0.01;
+    double TAKE_PROFITE_RATE_MIDDLE = 0.6 * 0.01;
+    double TAKE_PROFITE_RATE_BIG = 0.8 * 0.01;
+
+    double POLICYBYLEAD_MARGIN_SAFE_RATE_INIT = 0.2;     //保证金初始安全比例, 越小，可用的越少
+
+    int POLICY_BYLEAD_AUTO_TRADE_INTERVAL = 5 * 1000;   //自动交易的间隔时间，单位ms
+
 }
