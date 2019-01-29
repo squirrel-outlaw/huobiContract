@@ -80,11 +80,15 @@ public interface TradeConditionConsts {
     double OPEN_POSITION_RATE_MIDDLE = 0.85 * 0.01;
     double OPEN_POSITION_RATE_BIG = 1.1 * 0.01;
 
-    double TAKE_PROFITE_RATE_SMALL = 0.4 * 0.01;
-    double TAKE_PROFITE_RATE_MIDDLE = 0.6 * 0.01;
-    double TAKE_PROFITE_RATE_BIG = 0.8 * 0.01;
+    double TAKE_PROFIT_RATE_SMALL = 0.4 * 0.01;
+    double TAKE_PROFIT_RATE_MIDDLE = 0.6 * 0.01;
+    double TAKE_PROFIT_RATE_BIG = 0.8 * 0.01;
 
-    double POLICYBYLEAD_MARGIN_SAFE_RATE_INIT = 0.2;     //保证金初始安全比例, 越小，可用的越少
+    double POLICYBYLEAD_MARGIN_SAFE_RATE_INIT = 0.1;     //保证金初始安全比例, 越小，可用的越少
+
+    int LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_SMALL = 15 * 60 * 1000;  //上个小时还有持仓没有平，对平仓价格进行修改的最小时间限制
+    int LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE = 30 * 60 * 1000;
+    int LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_BIG = 45 * 60 * 1000;
 
     int POLICY_BYLEAD_AUTO_TRADE_INTERVAL = 5 * 1000;   //自动交易的间隔时间，单位ms
 

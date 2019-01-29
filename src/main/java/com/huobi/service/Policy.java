@@ -45,11 +45,9 @@ public abstract class Policy {
         for (ContractAccountInfo contractAccountInfo : contractAccountInfoList) {
             if (contractAccountInfo.getSymbol().equals(symbol)) {
                 if (isPercent) {
-                    return (contractAccountInfo.getMargin_available() - contractAccountInfo.getMargin_balance()
-                            * (1 - safePercent)) / contractAccountInfo.getMargin_balance() * safePercent;
+                    return (contractAccountInfo.getMargin_available() - contractAccountInfo.getMargin_balance() * (1 - safePercent)) / (contractAccountInfo.getMargin_balance() * safePercent);
                 }
-                return contractAccountInfo.getMargin_available() - contractAccountInfo.getMargin_balance()
-                        * (1 - safePercent);
+                return contractAccountInfo.getMargin_available() - contractAccountInfo.getMargin_balance() * (1 - safePercent);
             }
         }
         return 0;

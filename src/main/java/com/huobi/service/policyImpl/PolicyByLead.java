@@ -26,7 +26,7 @@ import static com.huobi.utils.PrintUtil.print;
  */
 public class PolicyByLead extends Policy {
 
-    private String currentKlineStatus="";
+    private String currentKlineStatus = "";
     private String currentOpenningStatus = "normal";
     private boolean currentOpenningStatusForbidLock = false;
 
@@ -36,13 +36,10 @@ public class PolicyByLead extends Policy {
     private boolean isLastHourHasLongPosition = false;
     private boolean isLastHourHasShortPosition = false;
 
-
     private long isLastHourHasLongPositionStartTimeStamp;
     private long isLastHourHasShortPositionStartTimeStamp;
 
-
     private double marginSafePercent = POLICYBYLEAD_MARGIN_SAFE_RATE_INIT;
-
 
     private double openPositionHangPriceRateSmall;
     private double openPositionHangPriceRateMiddle;
@@ -52,11 +49,9 @@ public class PolicyByLead extends Policy {
     private double closePositionHangPriceRateMiddle;
     private double closePositionHangPriceRateBig;
 
-
     public PolicyByLead(InitSystem initSystem, boolean isThisPolicyAvailable) {
         super(initSystem, isThisPolicyAvailable);
     }
-
 
     @Override
     public void autoTrade() {
@@ -92,9 +87,9 @@ public class PolicyByLead extends Policy {
                     }
                     currentKlineStatus = "green";
                     if (currentOpenningStatus.equals("carefulLong")) {
-                        openPositionHangPriceRateSmall = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_SMALL + 0.5);
-                        openPositionHangPriceRateMiddle = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_MIDDLE + 0.5);
-                        openPositionHangPriceRateBig = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_BIG + 0.5);
+                        openPositionHangPriceRateSmall = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_SMALL + 0.5 * 0.01);
+                        openPositionHangPriceRateMiddle = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_MIDDLE + 0.5 * 0.01);
+                        openPositionHangPriceRateBig = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_BIG + 0.5 * 0.01);
                     } else {
                         openPositionHangPriceRateSmall = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_SMALL);
                         openPositionHangPriceRateMiddle = klineList.get(2).getClose() * (1 + OPEN_POSITION_RATE_MIDDLE);
@@ -108,9 +103,9 @@ public class PolicyByLead extends Policy {
                     }
                     currentKlineStatus = "red";
                     if (currentOpenningStatus.equals("carefulLong")) {
-                        openPositionHangPriceRateSmall = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_SMALL - 0.5);
-                        openPositionHangPriceRateMiddle = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_MIDDLE - 0.5);
-                        openPositionHangPriceRateBig = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_BIG - 0.5);
+                        openPositionHangPriceRateSmall = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_SMALL - 0.5 * 0.01);
+                        openPositionHangPriceRateMiddle = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_MIDDLE - 0.5 * 0.01);
+                        openPositionHangPriceRateBig = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_BIG - 0.5 * 0.01);
                     } else {
                         openPositionHangPriceRateSmall = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_SMALL);
                         openPositionHangPriceRateMiddle = klineList.get(2).getClose() * (1 - OPEN_POSITION_RATE_MIDDLE);
@@ -148,34 +143,34 @@ public class PolicyByLead extends Policy {
                     long positionVolumeSell = (long) queryPosition("sell", "volume");
                     currentTime = System.currentTimeMillis();
                     long timeDiff = currentTime - isLastHourHasLongPositionStartTimeStamp;
-                    if (positionVolumeBuy > 0 && timeDiff > 15 * 60 * 1000 && timeDiff <= 30 * 60 * 1000 && currentClosingStatusBuy.equals("normal")) {
+                    if (positionVolumeBuy > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_SMALL && timeDiff <= LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE && currentClosingStatusBuy.equals("normal")) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "上个1小时多头持仓15分钟未清理完成，清仓状态变为 urgent；";
                         currentClosingStatusBuy = "urgent";
                         finishCancelAllOrders();
                     }
-                    if (positionVolumeBuy > 0 && timeDiff > 30 * 60 * 1000 && timeDiff <= 45 * 60 * 1000 && currentClosingStatusBuy.equals("urgent")) {
+                    if (positionVolumeBuy > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE && timeDiff <= LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_BIG && currentClosingStatusBuy.equals("urgent")) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "上个1小时多头持仓30分钟未清理完成，清仓状态变为 " + "veryUrgent；";
                         currentClosingStatusBuy = "veryUrgent";
                         finishCancelAllOrders();
                     }
-                    if (positionVolumeBuy > 0 && timeDiff > 45 * 60 * 1000 && currentClosingStatusBuy.equals("veryUrgent")) {
+                    if (positionVolumeBuy > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_BIG && currentClosingStatusBuy.equals("veryUrgent")) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "上个1小时多头持仓45分钟未清理完成，清仓状态变为 mostUrgent；";
                         currentClosingStatusBuy = "mostUrgent";
                         finishCancelAllOrders();
                     }
 
                     timeDiff = currentTime - isLastHourHasShortPositionStartTimeStamp;
-                    if (positionVolumeSell > 0 && timeDiff > 15 * 60 * 1000 && timeDiff <= 30 * 60 * 1000 && currentClosingStatusSell.equals("normal")) {
+                    if (positionVolumeSell > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_SMALL && timeDiff <= LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE && currentClosingStatusSell.equals("normal")) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "上个1小时空头持仓15分钟未清理完成，清仓状态变为 urgent；";
                         currentClosingStatusSell = "urgent";
                         finishCancelAllOrders();
                     }
-                    if (positionVolumeSell > 0 && timeDiff > 30 * 60 * 1000 && timeDiff <= 45 * 60 * 1000 && currentClosingStatusSell.equals("urgent")) {
+                    if (positionVolumeSell > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE && timeDiff <= LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_BIG && currentClosingStatusSell.equals("urgent")) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "上个1小时空头持仓30分钟未清理完成，清仓状态变为 " + "veryUrgent；";
                         currentClosingStatusSell = "veryUrgent";
                         finishCancelAllOrders();
                     }
-                    if (positionVolumeSell > 0 && timeDiff > 45 * 60 * 1000 && currentClosingStatusSell.equals("veryUrgent")) {
+                    if (positionVolumeSell > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_BIG && currentClosingStatusSell.equals("veryUrgent")) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "上个1小时空头持仓45分钟未清理完成，清仓状态变为 mostUrgent；";
                         currentClosingStatusSell = "mostUrgent";
                         finishCancelAllOrders();
@@ -187,8 +182,8 @@ public class PolicyByLead extends Policy {
                     currentClosingStatusSell = "normal";
                 }
 
-                //如果可用的保证金大于0,并且currentOpenningStatus不为forbid，才进行开仓挂单
-                if (getAvailableMargin("BTC", true, marginSafePercent) > 0 && !currentOpenningStatus.equals("forbid")) {
+                //如果可用的保证金比例大于0.05,并且currentOpenningStatus不为forbid，才进行开仓挂单
+                if (getAvailableMargin("BTC", true, marginSafePercent) > 0.05 && !currentOpenningStatus.equals("forbid")) {
                     double availableMargin = getAvailableMargin("BTC", false, marginSafePercent);
                     long maxOpenVolume = getMaxOpenVolume(availableMargin, "BTC_CQ");
                     String hangDirection;
@@ -201,15 +196,11 @@ public class PolicyByLead extends Policy {
                         hangDirection = "buy";
                     }
                     double availableMarginPercent = getAvailableMargin("BTC", true, marginSafePercent);
-                    print(availableMarginPercent);
-                    print(maxOpenVolume);
                     if (availableMarginPercent > 0.7) {
-                        hangVolumeRateSmall = (long) (maxOpenVolume * 0.33);
-                        print(hangVolumeRateSmall);
-                        hangVolumeRateMiddle = (long) (maxOpenVolume * 0.33);
+                        hangVolumeRateSmall = (long) (maxOpenVolume * 0.3) + 1;
+                        hangVolumeRateMiddle = (long) (maxOpenVolume * 0.4) + 1;
                         hangVolumeRateBig = maxOpenVolume - hangVolumeRateSmall - hangVolumeRateMiddle;
-                    }
-                    if (availableMarginPercent > 0.33 && availableMarginPercent <= 0.7) {
+                    } else if (availableMarginPercent > 0.33) {
                         hangVolumeRateSmall = (long) (maxOpenVolume * 0.5);
                         hangVolumeRateMiddle = maxOpenVolume - hangVolumeRateSmall;
                     } else {
@@ -225,16 +216,16 @@ public class PolicyByLead extends Policy {
                 if (currentClosingStatusBuy.equals("normal")) {
                     double cost_hold = (double) queryPosition("buy", "cost_hold");
                     if (cost_hold > 0) {
-                        closePositionHangPriceRateSmall = cost_hold * (1 + TAKE_PROFITE_RATE_SMALL);
-                        closePositionHangPriceRateMiddle = cost_hold * (1 + TAKE_PROFITE_RATE_MIDDLE);
-                        closePositionHangPriceRateBig = cost_hold * (1 + TAKE_PROFITE_RATE_BIG);
+                        closePositionHangPriceRateSmall = cost_hold * (1 + TAKE_PROFIT_RATE_SMALL);
+                        closePositionHangPriceRateMiddle = cost_hold * (1 + TAKE_PROFIT_RATE_MIDDLE);
+                        closePositionHangPriceRateBig = cost_hold * (1 + TAKE_PROFIT_RATE_BIG);
                         closePositionHangOrder("buy");
                     }
                 }
                 if (currentClosingStatusBuy.equals("urgent")) {
                     double cost_hold = (double) queryPosition("buy", "cost_hold");
                     if (cost_hold > 0) {
-                        closePositionHangPriceRateSmall = cost_hold * (1 + TAKE_PROFITE_RATE_SMALL - 0.2);
+                        closePositionHangPriceRateSmall = cost_hold * (1 + TAKE_PROFIT_RATE_SMALL - 0.2 * 0.01);
                         closePositionHangPriceRateMiddle = closePositionHangPriceRateSmall;
                         closePositionHangPriceRateBig = closePositionHangPriceRateSmall;
                         closePositionHangOrder("buy");
@@ -243,7 +234,7 @@ public class PolicyByLead extends Policy {
                 if (currentClosingStatusBuy.equals("veryUrgent")) {
                     double cost_hold = (double) queryPosition("buy", "cost_hold");
                     if (cost_hold > 0) {
-                        closePositionHangPriceRateSmall = cost_hold * (1 + TAKE_PROFITE_RATE_SMALL - 0.3);
+                        closePositionHangPriceRateSmall = cost_hold * (1 + TAKE_PROFIT_RATE_SMALL - 0.3 * 0.01);
                         closePositionHangPriceRateMiddle = closePositionHangPriceRateSmall;
                         closePositionHangPriceRateBig = closePositionHangPriceRateSmall;
                         closePositionHangOrder("buy");
@@ -262,16 +253,16 @@ public class PolicyByLead extends Policy {
                 if (currentClosingStatusSell.equals("normal")) {
                     double cost_hold = (double) queryPosition("sell", "cost_hold");
                     if (cost_hold > 0) {
-                        closePositionHangPriceRateSmall = cost_hold * (1 - TAKE_PROFITE_RATE_SMALL);
-                        closePositionHangPriceRateMiddle = cost_hold * (1 - TAKE_PROFITE_RATE_MIDDLE);
-                        closePositionHangPriceRateBig = cost_hold * (1 - TAKE_PROFITE_RATE_BIG);
+                        closePositionHangPriceRateSmall = cost_hold * (1 - TAKE_PROFIT_RATE_SMALL);
+                        closePositionHangPriceRateMiddle = cost_hold * (1 - TAKE_PROFIT_RATE_MIDDLE);
+                        closePositionHangPriceRateBig = cost_hold * (1 - TAKE_PROFIT_RATE_BIG);
                         closePositionHangOrder("sell");
                     }
                 }
                 if (currentClosingStatusSell.equals("urgent")) {
                     double cost_hold = (double) queryPosition("sell", "cost_hold");
                     if (cost_hold > 0) {
-                        closePositionHangPriceRateSmall = cost_hold * (1 - TAKE_PROFITE_RATE_SMALL + 0.2);
+                        closePositionHangPriceRateSmall = cost_hold * (1 - TAKE_PROFIT_RATE_SMALL + 0.2 * 0.01);
                         closePositionHangPriceRateMiddle = closePositionHangPriceRateSmall;
                         closePositionHangPriceRateBig = closePositionHangPriceRateSmall;
                         closePositionHangOrder("sell");
@@ -280,7 +271,7 @@ public class PolicyByLead extends Policy {
                 if (currentClosingStatusSell.equals("veryUrgent")) {
                     double cost_hold = (double) queryPosition("sell", "cost_hold");
                     if (cost_hold > 0) {
-                        closePositionHangPriceRateSmall = cost_hold * (1 - TAKE_PROFITE_RATE_SMALL + 0.3);
+                        closePositionHangPriceRateSmall = cost_hold * (1 - TAKE_PROFIT_RATE_SMALL + 0.3 * 0.01);
                         closePositionHangPriceRateMiddle = closePositionHangPriceRateSmall;
                         closePositionHangPriceRateBig = closePositionHangPriceRateSmall;
                         closePositionHangOrder("sell");
@@ -310,8 +301,8 @@ public class PolicyByLead extends Policy {
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", price,
                     volume, direction, offset, 20, "limit");
             huobiContractAPI.placeOrder(contractOrderRequest);
-            currentPolicyRunningStatus = df.format(new Date()) + " " + offset + "挂单，价格：" + price + ",数量：" + volume +
-                    ",方向：" + direction;
+            currentPolicyRunningStatus = df.format(new Date()) + " " + offset + " 挂单，价格：" + price + ",数量：" + volume +
+                    ", 方向：" + direction;
             openClosePositionHangStatusList.add(currentPolicyRunningStatus);
         }
     }
@@ -322,9 +313,9 @@ public class PolicyByLead extends Policy {
         long availablePositionVolume = (long) queryPosition(direction, "available");
         if (availablePositionVolume > 0) {
             //撤销所有委托订单
-            finishCancelAllOrders();
+            //finishCancelAllOrders();
             //重新获得最新的可用的持仓
-            availablePositionVolume = (long) queryPosition(direction, "available");
+            //availablePositionVolume = (long) queryPosition(direction, "available");
             String hangDirection;
             long hangVolumeRateSmall;
             long hangVolumeRateMiddle = 0;
@@ -338,11 +329,10 @@ public class PolicyByLead extends Policy {
             long maxOpenVolumeBySafePercent = getMaxOpenVolume(totalMargin * POLICYBYLEAD_MARGIN_SAFE_RATE_INIT, "BTC_CQ");
             double availablePositionVolumePercent = availablePositionVolume / maxOpenVolumeBySafePercent;
             if (availablePositionVolumePercent > 0.7) {
-                hangVolumeRateSmall = (long) (availablePositionVolume * 0.33);
-                hangVolumeRateMiddle = (long) (availablePositionVolume * 0.33);
+                hangVolumeRateSmall = (long) (availablePositionVolume * 0.4);
+                hangVolumeRateMiddle = (long) (availablePositionVolume * 0.3);
                 hangVolumeRateBig = availablePositionVolume - hangVolumeRateSmall - hangVolumeRateMiddle;
-            }
-            if (availablePositionVolumePercent > 0.33 && availablePositionVolumePercent <= 0.7) {
+            } else if (availablePositionVolumePercent > 0.33) {
                 hangVolumeRateSmall = (long) (availablePositionVolume * 0.5);
                 hangVolumeRateMiddle = availablePositionVolume - hangVolumeRateSmall;
             } else {
