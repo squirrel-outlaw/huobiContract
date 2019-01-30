@@ -16,6 +16,7 @@ import java.util.TimerTask;
 
 import static com.huobi.constant.TradeConditionConsts.*;
 
+import static com.huobi.utils.ListUtil.fixListLength;
 import static com.huobi.utils.PrintUtil.print;
 
 
@@ -27,8 +28,9 @@ import static com.huobi.utils.PrintUtil.print;
 public class PolicyByLead extends Policy {
     private String currentKlineStatus = "";
     private String currentOpenningStatus = "normal";
-    private boolean currentOpenningStatusForbidLock = false;
-    private boolean currentOpenningStatusForbidLock2 = false;
+    private boolean openForbidLockByLastHourPositionUnclose = false;
+    private boolean openForbidLockByTodayKlineLengthLimit = false;
+    private boolean openForbidLockByForceClose = false;
 
     private String currentClosingStatusBuy = "normal";
     private String currentClosingStatusSell = "normal";
@@ -64,6 +66,16 @@ public class PolicyByLead extends Policy {
             public void run() {
                 try {
                     currentPolicyRunningStatus = df.format(new Date()) + " " + "系统正常运行中";
+                    //当天涨跌幅超过一定幅度时不开仓
+                    List<Kline> klineDayList = huobiContractAPI.getKlines("BTC_CQ", Resolution.D1, "1");
+                    double todayKlineLengthRate = (klineDayList.get(0).getClose() - klineDayList.get(0).getOpen()) * 100 / klineDayList.get(0).getOpen();
+                    if (todayKlineLengthRate > TODAY_KLINE_LENGTH_RATE_UP_LIMIT || todayKlineLengthRate < TODAY_KLINE_LENGTH_RATE_DOWN_LIMIT) {
+                        currentOpenningStatus = "forbid";
+                        openForbidLockByTodayKlineLengthLimit = true;
+                    } else {
+                        openForbidLockByTodayKlineLengthLimit = false;
+                    }
+
                     List<Kline> klineList = huobiContractAPI.getKlines("BTC_CQ", Resolution.M60, "3");
                     double lastKlineLengthRate = (klineList.get(1).getClose() - klineList.get(1).getOpen()) * 100 / klineList.get(1).getOpen();
                     double secondLastKlineLengthRate = (klineList.get(0).getClose() - klineList.get(0).getOpen()) * 100 / klineList.get(0).getOpen();
@@ -71,11 +83,11 @@ public class PolicyByLead extends Policy {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "上一个小时的K线是大K线,禁止开仓";
                         // 当上一个小时的K线是大K线时禁止开仓
                         currentOpenningStatus = "forbid";
-                    } else if (secondLastKlineLengthRate > 1 && !currentOpenningStatusForbidLock) {
+                    } else if (secondLastKlineLengthRate > 1 && !openForbidLockByLastHourPositionUnclose && !openForbidLockByTodayKlineLengthLimit && !openForbidLockByForceClose) {
                         currentOpenningStatus = "carefulLong";
-                    } else if (secondLastKlineLengthRate < -1 && !currentOpenningStatusForbidLock) {
+                    } else if (secondLastKlineLengthRate < -1 && !openForbidLockByLastHourPositionUnclose && !openForbidLockByTodayKlineLengthLimit && !openForbidLockByForceClose) {
                         currentOpenningStatus = "carefulShort";
-                    } else if (!currentOpenningStatusForbidLock) {
+                    } else if (!openForbidLockByLastHourPositionUnclose && !openForbidLockByTodayKlineLengthLimit && !openForbidLockByForceClose) {
                         currentOpenningStatus = "normal";
                     }
 
@@ -117,7 +129,7 @@ public class PolicyByLead extends Policy {
                     long currentTime = System.currentTimeMillis();
                     long currentKlineStartTime = klineList.get(2).getId() * 1000;
                     if (currentTime < currentKlineStartTime + WHOLE_TIME_STATUS_SWITCH_CONTINUED) {
-                        currentPolicyRunningStatus = df.format(new Date()) + " " + "最新1小时K线刚刚开始15秒，清除开仓订单；";
+                        currentPolicyRunningStatus = df.format(new Date()) + " " + "最新1小时K线刚刚开始20秒，清除开仓订单；";
                         cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
                         lastHourHasLongPositionVolume = (long) queryPosition("buy", "volume");
                         lastHourHasShortPositionVolume = (long) queryPosition("sell", "volume");
@@ -125,7 +137,7 @@ public class PolicyByLead extends Policy {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新1小时K线刚刚开始15秒，发现上一个小时还有多头持仓，清理此持仓";
                             //cancelOrdersAccordingOrderIdList(closePositionHangOrderIDList);
                             //给下面的forbid状态上锁
-                            currentOpenningStatusForbidLock = true;
+                            openForbidLockByLastHourPositionUnclose = true;
                             currentOpenningStatus = "forbid";
                             isLastHourHasLongPosition = true;
                             isLastHourHasLongPositionStartTimeStamp = currentTime;
@@ -134,7 +146,7 @@ public class PolicyByLead extends Policy {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新1小时K线刚刚开始15秒，发现上一个小时还有空头持仓，清理此持仓；";
                             //cancelOrdersAccordingOrderIdList(closePositionHangOrderIDList);
                             //给下面的forbid状态上锁
-                            currentOpenningStatusForbidLock = true;
+                            openForbidLockByLastHourPositionUnclose = true;
                             currentOpenningStatus = "forbid";
                             isLastHourHasShortPosition = true;
                             isLastHourHasShortPositionStartTimeStamp = currentTime;
@@ -190,7 +202,7 @@ public class PolicyByLead extends Policy {
                     }
                     if ((!isLastHourHasLongPosition) && (!isLastHourHasShortPosition)) {
                         //解锁之前的forbid状态
-                        currentOpenningStatusForbidLock = false;
+                        openForbidLockByLastHourPositionUnclose = false;
                         currentClosingStatusBuy = "normal";
                         currentClosingStatusSell = "normal";
                     }
@@ -315,15 +327,22 @@ public class PolicyByLead extends Policy {
                     profitRateShort = (double) queryPosition("sell", "profit_rate");
                     //损失超过30%，平仓
                     if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_RATE_MIN) {
-                        cancelOrdersAccordingOrderIdList(closePositionHangOrderIDList);
                         currentClosingStatusBuy = "mostUrgent";
                         currentOpenningStatus = "forbid";
+                        openForbidLockByForceClose = true;
+                        cancelOrdersAccordingOrderIdList(closePositionHangOrderIDList);
                     }
                     if (profitRateShort < FORCE_CLOSE_POSITION_LOSS_RATE_MIN) {
-                        cancelOrdersAccordingOrderIdList(closePositionHangOrderIDList);
                         currentClosingStatusSell = "mostUrgent";
                         currentOpenningStatus = "forbid";
+                        openForbidLockByForceClose = true;
+                        cancelOrdersAccordingOrderIdList(closePositionHangOrderIDList);
                     }
+
+                   //保持所有的状态信息列表的长度
+                    fixListLength(openPositionHangStatusList,200);
+                    fixListLength(closePositionHangStatusList,200);
+                    fixListLength(longShortSwitchStatusList,200);
 
                     //终止此策略的运行
                     if (!isThisPolicyAvailable) {
@@ -350,12 +369,15 @@ public class PolicyByLead extends Policy {
             long orderID = huobiContractAPI.placeOrder(contractOrderRequest);
             if (offset.equals("open")) {
                 openPositionHangOrderIDList.add(orderID);
+                currentPolicyRunningStatus = df.format(new Date()) + " " + offset + " 挂单，价格：" + price + ",数量：" + volume +
+                        ", 方向：" + direction;
+                openPositionHangStatusList.add(currentPolicyRunningStatus);
             } else {
                 closePositionHangOrderIDList.add(orderID);
+                currentPolicyRunningStatus = df.format(new Date()) + " " + offset + " 挂单，价格：" + price + ",数量：" + volume +
+                        ", 方向：" + direction;
+                closePositionHangStatusList.add(currentPolicyRunningStatus);
             }
-            currentPolicyRunningStatus = df.format(new Date()) + " " + offset + " 挂单，价格：" + price + ",数量：" + volume +
-                    ", 方向：" + direction;
-            openClosePositionHangStatusList.add(currentPolicyRunningStatus);
         }
     }
 

@@ -23,11 +23,6 @@ public interface TradeConditionConsts {
     double MAX_OPEN_POSITION_PERCENT = 0.03;
 
 
-
-
-
-
-
     //PolicyWave用到的常数
     int GET_1HOUR_KLINE_COUNTS = 15 * 24;  //获取1小时K线的总个数
 
@@ -66,6 +61,9 @@ public interface TradeConditionConsts {
     //PolicyByLead用到的常数
     double POLICYBYLEAD_MARGIN_SAFE_RATE_INIT = 0.3;     //保证金初始安全比例, 越小，可用的越少
 
+    double TODAY_KLINE_LENGTH_RATE_UP_LIMIT = 3.5;  //当天涨幅超过此值时不开仓
+    double TODAY_KLINE_LENGTH_RATE_DOWN_LIMIT = -3.5;  //当天跌幅超过此值时不开仓
+
     double OPEN_POSITION_RATE_SMALL = 0.6 * 0.01;
     double OPEN_POSITION_RATE_MIDDLE = 0.85 * 0.01;
     double OPEN_POSITION_RATE_BIG = 1.1 * 0.01;
@@ -75,13 +73,13 @@ public interface TradeConditionConsts {
     double TAKE_PROFIT_RATE_SMALL = 0.4 * 0.01;
     double TAKE_PROFIT_RATE_MIDDLE = 0.6 * 0.01;
     double TAKE_PROFIT_RATE_BIG = 0.8 * 0.01;
-    double URGENT_CLOSE_POSITION_HANG_RATE_ADJUST=0.2 * 0.01;
-    double VERY_URGENT_CLOSE_POSITION_HANG_RATE_ADJUST=0.3 * 0.01;
+    double URGENT_CLOSE_POSITION_HANG_RATE_ADJUST = 0.2 * 0.01;
+    double VERY_URGENT_CLOSE_POSITION_HANG_RATE_ADJUST = 0.3 * 0.01;
 
     int LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_SMALL = 15 * 60 * 1000;  //上个小时还有持仓没有平，对平仓价格进行修改的最小时间限制
     int LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE = 30 * 60 * 1000;
     int LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_BIG = 45 * 60 * 1000;
-    int WHOLE_TIME_STATUS_SWITCH_CONTINUED=15 * 1000; //整点时，系统状态切换的持续时间
+    int WHOLE_TIME_STATUS_SWITCH_CONTINUED = 20 * 1000; //整点时，系统状态切换的持续时间
 
     int POLICY_BYLEAD_AUTO_TRADE_INTERVAL = 5 * 1000;   //自动交易的间隔时间，单位ms
 

@@ -257,7 +257,7 @@ public class PolicyWave extends Policy {
                                 maxOpenVolume, direction, "open", 20, "limit");
                         huobiContractAPI.placeOrder(contractOrderRequest);
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "开仓挂单，价格：" + hangPrice + ",数量：" + maxOpenVolume + ",方向：" + direction;
-                        openClosePositionHangStatusList.add(currentPolicyRunningStatus);
+                        openPositionHangStatusList.add(currentPolicyRunningStatus);
                     }
 
                     //如果开仓价格改变了，撤销所有开仓订单
@@ -360,18 +360,18 @@ public class PolicyWave extends Policy {
                 ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", closePositionPrice1,
                         availablePosition / 2, hangDirection, "close", 20, "limit");
                 currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行平仓挂单，价格：" + closePositionPrice1 + ",数量：" + availablePosition / 2 + ",方向：" + hangDirection;
-                openClosePositionHangStatusList.add(currentPolicyRunningStatus);
+                closePositionHangStatusList.add(currentPolicyRunningStatus);
                 huobiContractAPI.placeOrder(contractOrderRequest);
                 contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", closePositionPrice2,
                         availablePosition - availablePosition / 2, hangDirection, "close", 20, "limit");
                 currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行平仓挂单，价格：" + closePositionPrice2 + ",数量：" + (availablePosition - availablePosition / 2) + ",方向：" + hangDirection;
-                openClosePositionHangStatusList.add(currentPolicyRunningStatus);
+                closePositionHangStatusList.add(currentPolicyRunningStatus);
                 huobiContractAPI.placeOrder(contractOrderRequest);
             } else {
                 ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", closePositionPrice1,
                         availablePosition, hangDirection, "close", 20, "limit");
                 currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行平仓挂单，价格：" + closePositionPrice1 + ",数量：" + availablePosition + ",方向：" + hangDirection;
-                openClosePositionHangStatusList.add(currentPolicyRunningStatus);
+                closePositionHangStatusList.add(currentPolicyRunningStatus);
                 huobiContractAPI.placeOrder(contractOrderRequest);
             }
         }

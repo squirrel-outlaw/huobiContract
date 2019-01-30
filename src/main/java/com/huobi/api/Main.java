@@ -45,7 +45,11 @@ public class Main {
                     break;
                 case "4":
                     displaySystem.isDisplayPolicyRunningStatus = false;
-                    displaySystem.displayOpenClosePositionHangStatusInfo();
+                    displaySystem.displayOpenPositionHangStatusInfo();
+                    break;
+                case "5":
+                    displaySystem.isDisplayPolicyRunningStatus = false;
+                    displaySystem.displayClosePositionHangStatusInfo();
                     break;
                 case "q":
                     displaySystem.isDisplayPolicyRunningStatus = false;

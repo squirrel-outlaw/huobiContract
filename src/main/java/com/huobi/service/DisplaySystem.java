@@ -31,7 +31,8 @@ public class DisplaySystem {
                 "1.查询账户基本情况\n" +
                 "2.当前策略运行情况\n" +
                 "3.当前策略强行平仓情况\n" +
-                "4.当前策略开平仓挂单情况\n" +
+                "4.当前策略开仓挂单情况\n" +
+                "5.当前策略平仓挂单情况\n" +
                 "0:返回\n" +
                 "q:退出系统，终止程序\n");
     }
@@ -101,14 +102,26 @@ public class DisplaySystem {
         System.out.println("没有出现多空转换" + "\n");
     }
 
-    //显示策略运行时，开平仓挂单的状态信息
-    public void displayOpenClosePositionHangStatusInfo() {
-        if (!policy.openClosePositionHangStatusList.isEmpty()) {
-            for (String string : policy.openClosePositionHangStatusList) {
+    //显示策略运行时，开仓挂单的状态信息
+    public void displayOpenPositionHangStatusInfo() {
+        if (!policy.openPositionHangStatusList.isEmpty()) {
+            for (String string : policy.openPositionHangStatusList) {
                 System.out.println(string);
             }
             return;
         }
-        System.out.println("没有出现开平仓挂单" + "\n");
+        System.out.println("没有出现开仓挂单" + "\n");
     }
+    //显示策略运行时，平仓挂单的状态信息
+    public void displayClosePositionHangStatusInfo() {
+        if (!policy.closePositionHangStatusList.isEmpty()) {
+            for (String string : policy.closePositionHangStatusList) {
+                System.out.println(string);
+            }
+            return;
+        }
+        System.out.println("没有出现平仓挂单" + "\n");
+    }
+
+
 }
