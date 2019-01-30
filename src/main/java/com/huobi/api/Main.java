@@ -53,13 +53,11 @@ public class Main {
                     break;
                 default:
                     displaySystem.isDisplayPolicyRunningStatus = false;
-                    System.out.println("错误指令");
+                    System.out.println("错误指令!");
                     break;
             }
         }
     }
-
-
 }
 
 

@@ -27,14 +27,8 @@ public class InitSystem {
         String API_KEY = aesEncryption.decrypt(APIKeysEncrypted[0]);
         String API_SECRET = aesEncryption.decrypt(APIKeysEncrypted[1]);
         this.huobiContractAPI = new HuobiContractAPIImpl(API_KEY, API_SECRET);
-
         //初始化第二天零点时候的时间戳
         this.tomorrowZeroHourTimestamp = getHourPointTimestamp(24);
-        //初始化时取消所有委托订单
-        try {
-            huobiContractAPI.cancelAllOrders(new ContractOrderInfoRequest(0, "", "BTC"));
-        } catch (IllegalStateException E) {
-        }
     }
 
     private String[] getAPIKeys() {

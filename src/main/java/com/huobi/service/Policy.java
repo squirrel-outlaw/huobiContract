@@ -2,13 +2,17 @@ package com.huobi.service;
 
 import com.huobi.api.HuobiContractAPI;
 import com.huobi.domain.POJOs.ContractAccountInfo;
+import com.huobi.domain.POJOs.ContractOrderInfo;
 import com.huobi.domain.POJOs.ContractPositionInfo;
+import com.huobi.domain.enums.OrderStatus;
 import com.huobi.domain.request.ContractOrderInfoRequest;
 import com.huobi.domain.request.ContractOrderRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.huobi.utils.PrintUtil.print;
 
 
 /**
@@ -19,11 +23,16 @@ import java.util.List;
 public abstract class Policy {
     protected SimpleDateFormat df;   //设置日期格式
     protected HuobiContractAPI huobiContractAPI;
+    protected String policyStartInfo;
+    protected List<Long> openPositionHangOrderIDList = new ArrayList<>();
+    protected List<Long> closePositionHangOrderIDList = new ArrayList<>();
+
     public boolean isThisPolicyAvailable;
-    public String currentPolicyRunningStatus;   //系统运行时时的状态信息
-    public String policyStartInfo;
 
     //以下为显示系统运行状态的信息
+    public double profitRateLong = 0;
+    public double profitRateShort = 0;
+    public String currentPolicyRunningStatus;   //系统运行时时的状态信息
     public List<String> forceClosePositionStatusList = new ArrayList<>();   //强行平仓时的信息列表
     public List<String> openClosePositionHangStatusList = new ArrayList<>();  //开平仓挂单时的信息列表
     public List<String> longShortSwitchStatusList = new ArrayList<>();   //系统空多转换时的信息列表
@@ -64,31 +73,6 @@ public abstract class Policy {
         return 0;
     }
 
-    //计算在一定保证金的情况下，最大可开仓量
-    protected long getMaxOpenVolume(double margin, String contractSymbol) {
-        double newestPrice = huobiContractAPI.getTrade(contractSymbol).getPrice();
-        return (long) (margin * 20 * newestPrice / 100);
-    }
-
-
-    //撤销所有订单
-    protected void finishCancelAllOrders() {
-        try {
-            huobiContractAPI.cancelAllOrders(new ContractOrderInfoRequest(0, "", "BTC"));
-            //等待1秒钟，以便撤单完成
-            waitSomeSeconds(1);
-        } catch (IllegalStateException E) {
-        }
-    }
-
-    //让程序暂停运行几秒钟
-    protected void waitSomeSeconds(long seconds) {
-        try {
-            Thread.sleep(seconds * 1000);
-        } catch (Exception e) {
-        }
-    }
-
     //查询持仓情况
     protected Object queryPosition(String direction, String queryItem) {
         long positionVolume = 0;
@@ -119,5 +103,61 @@ public abstract class Policy {
         return "error";
     }
 
+    //计算在一定保证金的情况下，最大可开仓量
+    protected long getMaxOpenVolume(double margin, String contractSymbol) {
+        double newestPrice = huobiContractAPI.getTrade(contractSymbol).getPrice();
+        return (long) (margin * 20 * newestPrice / 100);
+    }
+
+    //撤销所有订单
+    protected void finishCancelAllOrders() {
+        try {
+            huobiContractAPI.cancelAllOrders(new ContractOrderInfoRequest(0, "", "BTC"));
+            //等待1秒钟，以便撤单完成
+            waitSomeMillis(1000);
+            openPositionHangOrderIDList.clear();
+            closePositionHangOrderIDList.clear();
+        } catch (IllegalStateException e) {
+        }
+    }
+
+    //根据订单ID列表撤销订单
+    protected void cancelOrdersAccordingOrderIdList(List<Long> orderList) {
+        ContractOrderInfoRequest contractOrderInfoRequest = new ContractOrderInfoRequest(0, "", "BTC");
+        for (long orderID : orderList) {
+            try {
+                contractOrderInfoRequest.setOrder_id(orderID);
+                huobiContractAPI.cancelOrder(contractOrderInfoRequest);
+                waitSomeMillis(100);
+            } catch (IllegalStateException e) {
+            }
+        }
+        orderList.clear();
+        //等待1秒钟，以便撤单完成
+        waitSomeMillis(1000);
+    }
+
+    //根据挂单的订单号查询订单的成交量
+    protected long checkHangOrderFinishedVolume(long orderID) {
+        ContractOrderInfoRequest orderInfoRequest = new ContractOrderInfoRequest(orderID, "", "BTC");
+        ContractOrderInfo orderDetail = huobiContractAPI.getContractOrderInfo(orderInfoRequest).get(0);
+        return orderDetail.getTrade_volume();
+    }
+
+    //让程序暂停运行几秒钟
+    protected void waitSomeSeconds(long seconds) {
+        try {
+            Thread.sleep(seconds * 1000);
+        } catch (Exception e) {
+        }
+    }
+
+    //让程序暂停运行几毫秒
+    protected void waitSomeMillis(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (Exception e) {
+        }
+    }
 
 }

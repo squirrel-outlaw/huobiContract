@@ -28,7 +28,9 @@ public interface HuobiConsts {
     ZoneId ZONE_GMT = ZoneId.of("Z");
 
     //所有合约交易对
-    List<String> ALL_CONTRACT_SYMBOLS = Arrays.asList("BTC_CW", "BTC_NW","BTC_CQ","ETH_CW", "ETH_NW",
-            "ETH_CQ","EOS_CW", "EOS_NW","EOS_CQ");
+    List<String> ALL_CONTRACT_SYMBOLS = Arrays.asList("BTC_CW", "BTC_NW", "BTC_CQ", "ETH_CW", "ETH_NW",
+            "ETH_CQ", "EOS_CW", "EOS_NW", "EOS_CQ");
+
+    int DISPLAY_POLICY_RUNNING_STATUS_INTERVAL = 10 * 1000;  //显示策略运行状态的间隔时间
 
 }

@@ -3,14 +3,12 @@ package com.huobi.service;
 import com.huobi.api.HuobiContractAPI;
 import com.huobi.domain.POJOs.ContractAccountInfo;
 import com.huobi.domain.POJOs.ContractPositionInfo;
-import com.huobi.service.policyImpl.PolicyByLead;
-import com.huobi.service.policyImpl.PolicyWave;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.huobi.constant.TradeConditionConsts.AUTO_TRADE_INTERVAL;
+import static com.huobi.constant.HuobiConsts.DISPLAY_POLICY_RUNNING_STATUS_INTERVAL;
 
 /**
  * @Author: squirrel
@@ -40,47 +38,44 @@ public class DisplaySystem {
 
     //显示账户基本情况
     public void displayAccountInformation(String symbol) {
-        double margin_balance = 0;
-        double margin_position = 0;
-        double profit_rate_buy = 0;
-        double profit_rate_sell = 0;
-        List<ContractAccountInfo> contractAccountInfoList = huobiContractAPI.getContractAccountInfos();
-        for (ContractAccountInfo contractAccountInfo : contractAccountInfoList) {
-            if (contractAccountInfo.getSymbol().equals(symbol)) {
-                margin_balance = contractAccountInfo.getMargin_balance();
-                margin_position = contractAccountInfo.getMargin_position();
+        try {
+            double margin_balance = 0;
+            double margin_position = 0;
+            double profit_rate_buy = 0;
+            double profit_rate_sell = 0;
+            List<ContractAccountInfo> contractAccountInfoList = huobiContractAPI.getContractAccountInfos();
+            for (ContractAccountInfo contractAccountInfo : contractAccountInfoList) {
+                if (contractAccountInfo.getSymbol().equals(symbol)) {
+                    margin_balance = contractAccountInfo.getMargin_balance();
+                    margin_position = contractAccountInfo.getMargin_position();
+                }
             }
+            profit_rate_buy = policy.profitRateLong;
+            profit_rate_sell = policy.profitRateShort;
+
+            System.out.println("\n" +
+                    "账户总资产为: " + margin_balance + " " + symbol + "\n" +
+                    "持仓保证金为: " + margin_position + " " + symbol + "\n" +
+                    "当前买多，收益率为: " + profit_rate_buy + "\n" +
+                    "当前卖空，收益率为: " + profit_rate_sell + "\n");
+        } catch (IllegalStateException e) {
+            System.out.println("查询错误，请稍后再试!");
         }
-        List<ContractPositionInfo> contractPositionInfoList = huobiContractAPI.getContractPositionInfos();
-        for (ContractPositionInfo contractPositionInfo : contractPositionInfoList) {
-            if (contractPositionInfo.getSymbol().equals(symbol) && contractPositionInfo.getContract_type().equals
-                    ("quarter") && contractPositionInfo.getDirection().equals("buy")) {
-                profit_rate_buy = contractPositionInfo.getProfit_rate();
-            }
-            if (contractPositionInfo.getSymbol().equals(symbol) && contractPositionInfo.getContract_type().equals
-                    ("quarter") && contractPositionInfo.getDirection().equals("sell")) {
-                profit_rate_sell = contractPositionInfo.getProfit_rate();
-            }
-        }
-        System.out.println("\n" +
-                "账户总资产为: " + margin_balance + " " + symbol + "\n" +
-                "持仓保证金为: " + margin_position + " " + symbol + "\n" +
-                "当前买多，收益率为: " + profit_rate_buy + "\n" +
-                "当前卖空，收益率为: " + profit_rate_sell + "\n");
+
     }
 
     //显示策略运行时，基本情况
     public void displayPolicyRunningStatus() {
-        System.out.println(policy.policyStartInfo + "\n");
+        System.out.println(policy.policyStartInfo);
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
                 if (!isDisplayPolicyRunningStatus) {
                     timer.cancel();
                 }
-                System.out.println(policy.currentPolicyRunningStatus + "\n");
+                System.out.println(policy.currentPolicyRunningStatus);
             }
-        }, 0, AUTO_TRADE_INTERVAL);// 自动交易间隔时间
+        }, 0, DISPLAY_POLICY_RUNNING_STATUS_INTERVAL);// 自动交易间隔时间
     }
 
 
@@ -88,7 +83,7 @@ public class DisplaySystem {
     public void displayForceClosePositionInfo() {
         if (!policy.forceClosePositionStatusList.isEmpty()) {
             for (String string : policy.forceClosePositionStatusList) {
-                System.out.println(string + "\n");
+                System.out.println(string);
             }
             return;
         }
@@ -99,7 +94,7 @@ public class DisplaySystem {
     public void displayLongShortSwitchStatusInfo() {
         if (!policy.longShortSwitchStatusList.isEmpty()) {
             for (String string : policy.longShortSwitchStatusList) {
-                System.out.println(string + "\n");
+                System.out.println(string);
             }
             return;
         }
@@ -110,11 +105,10 @@ public class DisplaySystem {
     public void displayOpenClosePositionHangStatusInfo() {
         if (!policy.openClosePositionHangStatusList.isEmpty()) {
             for (String string : policy.openClosePositionHangStatusList) {
-                System.out.println(string + "\n");
+                System.out.println(string);
             }
             return;
         }
         System.out.println("没有出现开平仓挂单" + "\n");
     }
-
 }

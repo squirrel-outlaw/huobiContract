@@ -282,8 +282,8 @@ public class PolicyWave extends Policy {
                     }
 
                     //系统损失超过一定幅度，强行平仓
-                    double profitRateLong = (double) queryPosition("buy", "profit_rate");
-                    double profitRateShort = (double) queryPosition("sell", "profit_rate");
+                    profitRateLong = (double) queryPosition("buy", "profit_rate");
+                    profitRateShort = (double) queryPosition("sell", "profit_rate");
                     //损失超过30%，平3成仓位，保证金安全比例降到0.35
                     if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_RATE_MIN || profitRateShort < FORCE_CLOSE_POSITION_LOSS_RATE_MIN) {
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "系统损失超过30%，强行平仓3成仓位";
