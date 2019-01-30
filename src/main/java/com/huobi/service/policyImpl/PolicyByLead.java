@@ -129,8 +129,9 @@ public class PolicyByLead extends Policy {
                     long currentTime = System.currentTimeMillis();
                     long currentKlineStartTime = klineList.get(2).getId() * 1000;
                     if (currentTime < currentKlineStartTime + WHOLE_TIME_STATUS_SWITCH_CONTINUED) {
-                        currentPolicyRunningStatus = df.format(new Date()) + " " + "最新1小时K线刚刚开始20秒，清除开仓订单；";
-                        cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
+                        currentPolicyRunningStatus = df.format(new Date()) + " " + "最新1小时K线刚刚开始20秒，清除所有订单；";
+                        //清除所有订单，做一次初始化的过程
+                        finishCancelAllOrders();
                         lastHourHasLongPositionVolume = (long) queryPosition("buy", "volume");
                         lastHourHasShortPositionVolume = (long) queryPosition("sell", "volume");
                         if (lastHourHasLongPositionVolume > 0) {
