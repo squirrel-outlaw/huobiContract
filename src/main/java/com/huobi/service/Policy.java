@@ -33,10 +33,10 @@ public abstract class Policy {
     public double profitRateLong = 0;
     public double profitRateShort = 0;
     public String currentPolicyRunningStatus;   //系统运行时时的状态信息
-    public List<String> forceClosePositionStatusList = new ArrayList<>();   //强行平仓时的信息列表
-    public List<String> openPositionHangStatusList = new ArrayList<>();  //开平仓挂单时的信息列表
-    public List<String> closePositionHangStatusList = new ArrayList<>();  //开平仓挂单时的信息列表
-    public List<String> longShortSwitchStatusList = new ArrayList<>();   //系统空多转换时的信息列表
+    public List<String> forceClosePositionInfoList = new ArrayList<>();   //强行平仓时的信息列表
+    public List<String> openPositionHangInfoList = new ArrayList<>();  //开平仓挂单时的信息列表
+    public List<String> closePositionHangInfoList = new ArrayList<>();  //开平仓挂单时的信息列表
+    public List<String> longShortSwitchInfoList = new ArrayList<>();   //系统空多转换时的信息列表
 
 
     public Policy(InitSystem initSystem, boolean isThisPolicyAvailable) {

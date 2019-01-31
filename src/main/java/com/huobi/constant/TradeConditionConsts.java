@@ -59,7 +59,7 @@ public interface TradeConditionConsts {
     //*********************************************************************************************************************
     //*********************************************************************************************************************
     //PolicyByLead用到的常数
-    double POLICYBYLEAD_MARGIN_SAFE_RATE_INIT = 0.3;     //保证金初始安全比例, 越小，可用的越少
+    double POLICYBYLEAD_MARGIN_SAFE_RATE_INIT = 0.5;     //保证金初始安全比例, 越小，可用的越少
 
     double TODAY_KLINE_LENGTH_RATE_UP_LIMIT = 3.5;  //当天涨幅超过此值时不开仓
     double TODAY_KLINE_LENGTH_RATE_DOWN_LIMIT = -3.5;  //当天跌幅超过此值时不开仓
@@ -67,6 +67,9 @@ public interface TradeConditionConsts {
     double OPEN_POSITION_RATE_SMALL = 0.6 * 0.01;
     double OPEN_POSITION_RATE_MIDDLE = 0.85 * 0.01;
     double OPEN_POSITION_RATE_BIG = 1.1 * 0.01;
+
+    double OPEN_POSITION_RATE_TODAY_BIG_KLINE_ADJUST = 2 * 0.01;
+    double OPEN_POSITION_RATE_LAST_HOUR_BIG_KLINE_ADJUST = 2 * 0.01;
     double OPEN_POSITION_RATE_CAREFUL_LONG_ADJUST = 0.5 * 0.01;
     double OPEN_POSITION_RATE_CAREFUL_SHORT_ADJUST = 0.5 * 0.01;
 
@@ -83,7 +86,7 @@ public interface TradeConditionConsts {
 
     int POLICY_BYLEAD_AUTO_TRADE_INTERVAL = 5 * 1000;   //自动交易的间隔时间，单位ms
 
-    double FORCE_CLOSE_POSITION_LOSS_RATE_MIN = -0.3;         //当损失达到一定幅度(小）后强行平仓
+    double FORCE_CLOSE_POSITION_LOSS_RATE_MIN = -0.25;         //当损失达到一定幅度(小）后强行平仓
     double FORCE_CLOSE_POSITION_LOSS_RATE_MIDDLE = -0.4;    //当损失达到一定幅度(中等）后强行平仓的阈值
     double FORCE_CLOSE_POSITION_LOSS_RATE_MAX = -0.5;        //当损失达到一定幅度(最大）后强行平仓的阈值
 

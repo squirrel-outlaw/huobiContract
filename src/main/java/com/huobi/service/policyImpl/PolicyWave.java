@@ -117,7 +117,7 @@ public class PolicyWave extends Policy {
                         //如果找到了大K线是出现在上一个小时，全部平仓，直接返回，进行下一次交易循环
                         if (isFindMarkKline && (i == klineList.size() - 2)) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "大K线为上一个小时出现的，全部平仓，直接返回，进行下一次交易循环";
-                            recordInfoToList(currentPolicyRunningStatus, forceClosePositionStatusList, klineList.get(i).getId());
+                            recordInfoToList(currentPolicyRunningStatus, forceClosePositionInfoList, klineList.get(i).getId());
                             closePositionRightNow("buy", 1);
                             closePositionRightNow("sell", 1);
                             waitSomeSeconds(LATELY_BIG_KLINE_AFTER_FORCE_CLOSE_POSITION_WAIT_TIME);
@@ -136,7 +136,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "大阳线做空时，最新价下探，调整做空的开仓价";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                         //如果最新的K线突破的大阳线的高点，转为做多
                                     } else if ((nextClosePrice - markKline.getHigh()) / markKline.getHigh() > THROUGH_GREEN_BIG_KLINE_RATE) {
@@ -145,7 +145,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线突破大阳线的高点，转为做多";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -161,7 +161,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线又回到大阳线的收盘价之下，转为做空";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                         //大阳线做多时，最新价上扬，时时调整做多开仓价
                                     } else if (nextClosePrice * (1 - OPEN_POSITION_HANG_PRICE_ADJUST_RATE) > openPositionPrice && nextClosePrice * (1 - OPEN_POSITION_HANG_PRICE_ADJUST_RATE) < markKline.getClose() * 1.015) {
@@ -169,7 +169,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "阳线做多时，最新价上扬，时时调整做多开仓价";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -184,7 +184,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "大阴线做多时，最新价上扬，时时调整做多开仓价";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                         //如果最新的K线突破的大阴线的低点，转为做空
                                     } else if ((nextClosePrice - markKline.getLow()) / markKline.getLow() < THROUGH_RED_BIG_KLINE_RATE) {
@@ -193,7 +193,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线突破大阴线的低点，转为做空";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -209,7 +209,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "最新的K线又回到大阴线的收盘价之上，转为做多";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                         //大阴线做空时，最新价下探，时时调整做空开仓价
                                     } else if (nextClosePrice * (1 + OPEN_POSITION_HANG_PRICE_ADJUST_RATE) < openPositionPrice && nextClosePrice * (1 + OPEN_POSITION_HANG_PRICE_ADJUST_RATE) > markKline.getClose() * 0.985) {
@@ -217,7 +217,7 @@ public class PolicyWave extends Policy {
                                         isOpenPositionPriceChange = true;
                                         if (j == klineList.size() - 1) {
                                             currentPolicyRunningStatus = df.format(new Date()) + " " + "阴线做空时，最新价下探，时时调整做空开仓价";
-                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchStatusList, klineList.get(j).getId());
+                                            recordInfoToList(currentPolicyRunningStatus, longShortSwitchInfoList, klineList.get(j).getId());
                                         }
                                     } else {
                                         isOpenPositionPriceChange = false;
@@ -257,7 +257,7 @@ public class PolicyWave extends Policy {
                                 maxOpenVolume, direction, "open", 20, "limit");
                         huobiContractAPI.placeOrder(contractOrderRequest);
                         currentPolicyRunningStatus = df.format(new Date()) + " " + "开仓挂单，价格：" + hangPrice + ",数量：" + maxOpenVolume + ",方向：" + direction;
-                        openPositionHangStatusList.add(currentPolicyRunningStatus);
+                        openPositionHangInfoList.add(currentPolicyRunningStatus);
                     }
 
                     //如果开仓价格改变了，撤销所有开仓订单
@@ -360,18 +360,18 @@ public class PolicyWave extends Policy {
                 ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", closePositionPrice1,
                         availablePosition / 2, hangDirection, "close", 20, "limit");
                 currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行平仓挂单，价格：" + closePositionPrice1 + ",数量：" + availablePosition / 2 + ",方向：" + hangDirection;
-                closePositionHangStatusList.add(currentPolicyRunningStatus);
+                closePositionHangInfoList.add(currentPolicyRunningStatus);
                 huobiContractAPI.placeOrder(contractOrderRequest);
                 contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", closePositionPrice2,
                         availablePosition - availablePosition / 2, hangDirection, "close", 20, "limit");
                 currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行平仓挂单，价格：" + closePositionPrice2 + ",数量：" + (availablePosition - availablePosition / 2) + ",方向：" + hangDirection;
-                closePositionHangStatusList.add(currentPolicyRunningStatus);
+                closePositionHangInfoList.add(currentPolicyRunningStatus);
                 huobiContractAPI.placeOrder(contractOrderRequest);
             } else {
                 ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null, "", closePositionPrice1,
                         availablePosition, hangDirection, "close", 20, "limit");
                 currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行平仓挂单，价格：" + closePositionPrice1 + ",数量：" + availablePosition + ",方向：" + hangDirection;
-                closePositionHangStatusList.add(currentPolicyRunningStatus);
+                closePositionHangInfoList.add(currentPolicyRunningStatus);
                 huobiContractAPI.placeOrder(contractOrderRequest);
             }
         }
@@ -379,7 +379,7 @@ public class PolicyWave extends Policy {
 
     //根据损失的不同，进行平仓处理
     private void closePositionAccordingToLoss(double closePositionVolumePercent, double marginSafePercentAdjust) {
-        forceClosePositionStatusList.add(currentPolicyRunningStatus);
+        forceClosePositionInfoList.add(currentPolicyRunningStatus);
         closePositionRightNow("buy", closePositionVolumePercent);
         closePositionRightNow("sell", closePositionVolumePercent);
         marginSafePercent = marginSafePercentAdjust;
@@ -421,7 +421,7 @@ public class PolicyWave extends Policy {
             ContractOrderRequest contractOrderRequest = new ContractOrderRequest("BTC", "quarter", null,
                     "", newestPrice, hangVolume, closeDirection, "close", 20, "limit");
             currentPolicyRunningStatus = df.format(new Date()) + " " + "对已有持仓进行立即平仓，价格：" + newestPrice + ",数量：" + hangVolume + ",方向：" + closeDirection;
-            forceClosePositionStatusList.add(currentPolicyRunningStatus);
+            forceClosePositionInfoList.add(currentPolicyRunningStatus);
             huobiContractAPI.placeOrder(contractOrderRequest);
             waitSomeSeconds(3);
         }

@@ -82,8 +82,8 @@ public class DisplaySystem {
 
     //显示策略运行时，强行平仓的相关信息
     public void displayForceClosePositionInfo() {
-        if (!policy.forceClosePositionStatusList.isEmpty()) {
-            for (String string : policy.forceClosePositionStatusList) {
+        if (!policy.forceClosePositionInfoList.isEmpty()) {
+            for (String string : policy.forceClosePositionInfoList) {
                 System.out.println(string);
             }
             return;
@@ -93,8 +93,8 @@ public class DisplaySystem {
 
     //显示策略运行时，多空转换的状态信息
     public void displayLongShortSwitchStatusInfo() {
-        if (!policy.longShortSwitchStatusList.isEmpty()) {
-            for (String string : policy.longShortSwitchStatusList) {
+        if (!policy.longShortSwitchInfoList.isEmpty()) {
+            for (String string : policy.longShortSwitchInfoList) {
                 System.out.println(string);
             }
             return;
@@ -104,8 +104,8 @@ public class DisplaySystem {
 
     //显示策略运行时，开仓挂单的状态信息
     public void displayOpenPositionHangStatusInfo() {
-        if (!policy.openPositionHangStatusList.isEmpty()) {
-            for (String string : policy.openPositionHangStatusList) {
+        if (!policy.openPositionHangInfoList.isEmpty()) {
+            for (String string : policy.openPositionHangInfoList) {
                 System.out.println(string);
             }
             return;
@@ -114,8 +114,8 @@ public class DisplaySystem {
     }
     //显示策略运行时，平仓挂单的状态信息
     public void displayClosePositionHangStatusInfo() {
-        if (!policy.closePositionHangStatusList.isEmpty()) {
-            for (String string : policy.closePositionHangStatusList) {
+        if (!policy.closePositionHangInfoList.isEmpty()) {
+            for (String string : policy.closePositionHangInfoList) {
                 System.out.println(string);
             }
             return;
