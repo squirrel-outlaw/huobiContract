@@ -13,5 +13,6 @@ public enum  OpenPositionStatus {
     riseOpenShort,
     todayKlineBigGreen,
     todayKlineBigRed,
+    afterForceClosePosition,
     forbid
 }

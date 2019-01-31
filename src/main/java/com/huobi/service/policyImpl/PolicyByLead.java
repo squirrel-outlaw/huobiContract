@@ -26,8 +26,9 @@ public class PolicyByLead extends Policy {
     private KlineStatus klineStatus = KlineStatus.green;
     private OpenPositionStatus openPositionStatus = OpenPositionStatus.normal;
     private boolean openForbidLockByLastHourPositionUnclose = false;
-    private boolean openForbidLockByTodayKlineLengthLimit = false;
-    private boolean openForbidLockByForceClose = false;
+    private boolean openLimitLockByForceClose = false;
+    private int forceClosePositionCount = 0;   //达到强行平仓条件的计数
+    private long forceClosePositionStartTimeStamp;
 
     private ClosePositionStatus closePositionStatusLong = ClosePositionStatus.normal;
     private ClosePositionStatus closePositionStatusShort = ClosePositionStatus.normal;
@@ -71,43 +72,43 @@ public class PolicyByLead extends Policy {
                     double lastKlineLengthRate = (klineList.get(1).getClose() - klineList.get(1).getOpen()) * 100 / klineList.get(1).getOpen();
                     double secondLastKlineLengthRate = (klineList.get(0).getClose() - klineList.get(0).getOpen()) * 100 / klineList.get(0).getOpen();
 
-                    if (todayKlineLengthRate > TODAY_KLINE_LENGTH_RATE_UP_LIMIT) {
+                    if (todayKlineLengthRate > TODAY_KLINE_LENGTH_RATE_UP_LIMIT && !openLimitLockByForceClose) {
                         if (openPositionStatus != OpenPositionStatus.todayKlineBigGreen) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "当天涨幅过大，调高开仓挂单幅度";
                             openPositionStatus = OpenPositionStatus.todayKlineBigGreen;
                             cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
                         }
-                    } else if (todayKlineLengthRate < TODAY_KLINE_LENGTH_RATE_DOWN_LIMIT) {
+                    } else if (todayKlineLengthRate < TODAY_KLINE_LENGTH_RATE_DOWN_LIMIT && !openLimitLockByForceClose) {
                         if (openPositionStatus != OpenPositionStatus.todayKlineBigRed) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "当天跌幅过大，调高开仓挂单幅度";
                             openPositionStatus = OpenPositionStatus.todayKlineBigRed;
                             cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
                         }
-                    } else if (lastKlineLengthRate > 1.5) {
+                    } else if (lastKlineLengthRate > 1.5 && !openLimitLockByForceClose) {
                         if (openPositionStatus != OpenPositionStatus.riseOpenShort) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "上一个小时的K线是大阳线,调高开空幅度";
                             openPositionStatus = OpenPositionStatus.riseOpenShort;
                             cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
                         }
-                    } else if (lastKlineLengthRate < -1.5) {
+                    } else if (lastKlineLengthRate < -1.5 && !openLimitLockByForceClose) {
                         if (openPositionStatus != OpenPositionStatus.reduceOpenLong) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "上一个小时的K线是大阴线,降低开多幅度";
                             openPositionStatus = OpenPositionStatus.reduceOpenLong;
                             cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
                         }
-                    } else if (secondLastKlineLengthRate > 1 && !openForbidLockByLastHourPositionUnclose && !openForbidLockByForceClose) {
+                    } else if (secondLastKlineLengthRate > 1 && !openForbidLockByLastHourPositionUnclose && !openLimitLockByForceClose) {
                         if (openPositionStatus != OpenPositionStatus.carefulShort) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "上上一个小时的K线是大阳线,调高开空幅度";
                             openPositionStatus = OpenPositionStatus.carefulShort;
                             cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
                         }
-                    } else if (secondLastKlineLengthRate < -1 && !openForbidLockByLastHourPositionUnclose && !openForbidLockByForceClose) {
+                    } else if (secondLastKlineLengthRate < -1 && !openForbidLockByLastHourPositionUnclose && !openLimitLockByForceClose) {
                         if (openPositionStatus != OpenPositionStatus.carefulLong) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "上上一个小时的K线是大阴线,降低开多幅度";
                             openPositionStatus = OpenPositionStatus.carefulLong;
                             cancelOrdersAccordingOrderIdList(openPositionHangOrderIDList);
                         }
-                    } else if (!openForbidLockByLastHourPositionUnclose && !openForbidLockByForceClose) {
+                    } else if (!openForbidLockByLastHourPositionUnclose && !openLimitLockByForceClose) {
                         if (openPositionStatus != OpenPositionStatus.normal) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "正常开仓状态";
                             openPositionStatus = OpenPositionStatus.normal;
@@ -144,8 +145,7 @@ public class PolicyByLead extends Policy {
                     //如果有上一个小时没有平仓的多头持仓
                     if (isLastHourHasLongPosition) {
                         long positionVolumeLong = (long) queryPosition("buy", "volume");
-                        currentTime = System.currentTimeMillis();
-                        long timeDiff = currentTime - isLastHourHasLongPositionStartTimeStamp;
+                        long timeDiff = System.currentTimeMillis() - isLastHourHasLongPositionStartTimeStamp;
                         if (positionVolumeLong > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_SMALL && timeDiff <= LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE
                                 && closePositionStatusLong == ClosePositionStatus.normal) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "上1小时多头持仓15分钟未清理完成，清仓状态变为 urgent；";
@@ -168,8 +168,7 @@ public class PolicyByLead extends Policy {
                     //如果有上一个小时没有平仓的空头持仓
                     if (isLastHourHasShortPosition) {
                         long positionVolumeShort = (long) queryPosition("sell", "volume");
-                        currentTime = System.currentTimeMillis();
-                        long timeDiff = currentTime - isLastHourHasShortPositionStartTimeStamp;
+                        long timeDiff = System.currentTimeMillis() - isLastHourHasShortPositionStartTimeStamp;
                         if (positionVolumeShort > 0 && timeDiff > LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_SMALL && timeDiff <= LAST_HOUR_POSITION_CLOSE_PRICE_ADJUST_TIME_INTERVAL_MIDDLE
                                 && closePositionStatusShort == ClosePositionStatus.normal) {
                             currentPolicyRunningStatus = df.format(new Date()) + " " + "上1小时空头持仓15分钟未清理完成，清仓状态变为 urgent；";
@@ -357,11 +356,30 @@ public class PolicyByLead extends Policy {
                     waitSomeMillis(100);
                     profitRateShort = (double) queryPosition("sell", "profit_rate");
                     //损失超过25%，平仓
-                    if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_RATE_MIN) {
-                        forceClosePositionProcess("buy");
-                    }
-                    if (profitRateShort < FORCE_CLOSE_POSITION_LOSS_RATE_MIN) {
-                        forceClosePositionProcess("sell");
+                    if (profitRateLong < FORCE_CLOSE_POSITION_LOSS_RATE) {
+                        forceClosePositionCount = forceClosePositionCount + 1;
+                        if (forceClosePositionCount == FORCE_CLOSE_POSITION_COUNT_MAX) {
+                            forceClosePositionStartTimeStamp = System.currentTimeMillis();
+                            openLimitLockByForceClose = true;
+                            openPositionStatus = OpenPositionStatus.afterForceClosePosition;
+                            closePositionStatusLong = ClosePositionStatus.rightNow;
+                        }
+                    } else if (profitRateShort < FORCE_CLOSE_POSITION_LOSS_RATE) {
+                        forceClosePositionCount = forceClosePositionCount + 1;
+                        if (forceClosePositionCount == FORCE_CLOSE_POSITION_COUNT_MAX) {
+                            forceClosePositionStartTimeStamp = System.currentTimeMillis();
+                            openLimitLockByForceClose = true;
+                            openPositionStatus = OpenPositionStatus.afterForceClosePosition;
+                            closePositionStatusShort = ClosePositionStatus.rightNow;
+                        }
+                    } else {
+                        forceClosePositionCount = 0;
+                        closePositionStatusLong = ClosePositionStatus.normal;
+                        closePositionStatusShort = ClosePositionStatus.normal;
+                        //强行平仓后，开仓限制持续时间1小时
+                        if (openPositionStatus == OpenPositionStatus.afterForceClosePosition && System.currentTimeMillis() - forceClosePositionStartTimeStamp > OPEN_LIMIT_LOCK_DURATION_TIME) {
+                            openLimitLockByForceClose = false;
+                        }
                     }
 
                     //保持所有的状态信息列表的长度
@@ -375,10 +393,7 @@ public class PolicyByLead extends Policy {
                         timer.cancel();
                     }
 
-                } catch (
-                        IllegalStateException e)
-
-                {
+                } catch (IllegalStateException e) {
                     currentPolicyRunningStatus = e.getMessage();
                 }
             }
@@ -466,17 +481,6 @@ public class PolicyByLead extends Policy {
         openClosePositionHangBasic(hangVolumeRateSmall, closePositionHangPriceRateSmall, hangDirection, "close");
         openClosePositionHangBasic(hangVolumeRateMiddle, closePositionHangPriceRateMiddle, hangDirection, "close");
         openClosePositionHangBasic(hangVolumeRateBig, closePositionHangPriceRateBig, hangDirection, "close");
-    }
-
-    //强行平仓的处理
-    private void forceClosePositionProcess(String position) {
-        openPositionStatus = OpenPositionStatus.forbid;
-        openForbidLockByForceClose = true;
-        if (position.equals("buy")) {
-            closePositionStatusLong = ClosePositionStatus.rightNow;
-        } else {
-            closePositionStatusShort = ClosePositionStatus.rightNow;
-        }
     }
 
 }

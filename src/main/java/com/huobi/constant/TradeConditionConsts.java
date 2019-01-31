@@ -86,9 +86,8 @@ public interface TradeConditionConsts {
 
     int POLICY_BYLEAD_AUTO_TRADE_INTERVAL = 5 * 1000;   //自动交易的间隔时间，单位ms
 
-    double FORCE_CLOSE_POSITION_LOSS_RATE_MIN = -0.25;         //当损失达到一定幅度(小）后强行平仓
-    double FORCE_CLOSE_POSITION_LOSS_RATE_MIDDLE = -0.4;    //当损失达到一定幅度(中等）后强行平仓的阈值
-    double FORCE_CLOSE_POSITION_LOSS_RATE_MAX = -0.5;        //当损失达到一定幅度(最大）后强行平仓的阈值
-
+    double FORCE_CLOSE_POSITION_LOSS_RATE = -0.25;         //当损失达到一定幅度后强行平仓
+    int FORCE_CLOSE_POSITION_COUNT_MAX = 5;    //当强行平仓计数达到此值时真正进行平仓动作
+    long OPEN_LIMIT_LOCK_DURATION_TIME = 60 * 60 * 1000;  //强行平仓后，开仓限制持续时间
 
 }
